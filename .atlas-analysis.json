@@ -1,0 +1,110 @@
+{
+  "projectType": "frontend",
+  "projectName": "Termy",
+  "projectDescription": "Minimal GPU-powered terminal emulator built with GPUI and Rust",
+  "theme": "aspen",
+  "primaryColor": "#85a68c",
+  "lightColor": "#383c4b",
+  "darkColor": "#d4d7d6",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/gpu-acceleration",
+              "features/tmux-integration",
+              "features/themes",
+              "features/ai-input",
+              "features/search"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/overview",
+              "configuration/appearance",
+              "configuration/terminal",
+              "configuration/tabs",
+              "configuration/keybindings",
+              "configuration/colors"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/tmux-setup",
+              "guides/custom-themes",
+              "guides/shell-integration",
+              "guides/font-configuration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI Reference",
+        "groups": [
+          {
+            "group": "Commands",
+            "pages": [
+              "cli/overview",
+              "cli/list-fonts",
+              "cli/list-themes",
+              "cli/list-keybinds",
+              "cli/config-management",
+              "cli/tui"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Advanced",
+        "groups": [
+          {
+            "group": "Development",
+            "pages": [
+              "advanced/architecture",
+              "advanced/building",
+              "advanced/contributing"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "GPU-accelerated rendering with GPUI",
+    "Native tmux integration with pane splitting",
+    "Customizable themes and color schemes",
+    "AI-powered input assistance (OpenAI/Gemini)",
+    "Full-text search in terminal output",
+    "Comprehensive keybinding customization",
+    "Cross-platform support (macOS, Linux, Windows)",
+    "CLI for configuration management"
+  ],
+  "publicApiSurface": [
+    "termy-cli -list-fonts",
+    "termy-cli -list-themes",
+    "termy-cli -list-keybinds",
+    "termy-cli -list-colors",
+    "termy-cli -list-actions",
+    "termy-cli -edit-config",
+    "termy-cli -show-config",
+    "termy-cli -validate-config",
+    "termy-cli -prettify-config",
+    "termy-cli -tui",
+    "termy-cli -update",
+    "Configuration: ~/.config/termy/config.txt",
+    "Theme schema: theme.schema.json"
+  ]
+}
