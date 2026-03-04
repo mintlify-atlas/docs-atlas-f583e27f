@@ -1,0 +1,116 @@
+---
+title: GPU Acceleration
+description: Hardware-accelerated rendering with GPUI for smooth terminal performance
+---
+
+Termy uses GPUI (GPU User Interface), a modern GPU-accelerated UI framework developed by Zed Industries, to deliver exceptional rendering performance and smooth animations.
+
+## Overview
+
+GPUI provides hardware-accelerated rendering for the entire terminal interface, including:
+
+- Terminal text and ANSI colors
+- Tab strip animations
+- Scrolling and viewport rendering
+- UI overlays (search, command palette, AI input)
+- Cursor animations and blinking
+
+## How It Works
+
+Termy integrates GPUI as its core rendering engine through a dependency on the Zed GPUI package:
+
+```toml
+# From Cargo.toml
+gpui = { git = "https://github.com/zed-industries/zed", package = "gpui" }
+```
+
+### Rendering Pipeline
+
+1. **Terminal Emulation**: Termy uses Alacritty's terminal emulation engine to process terminal output
+2. **GPUI Integration**: Terminal grid cells are rendered using GPUI's GPU-accelerated primitives
+3. **Efficient Updates**: Only changed regions are re-rendered, minimizing GPU load
+4. **Compositing**: UI overlays and chrome are composited in separate layers
+
+## Performance Benefits
+
+<Tip>
+GPUI enables Termy to render complex terminal UIs at 60+ FPS with minimal CPU usage.
+</Tip>
+
+### Key Advantages
+
+**Smooth Animations**
+- Tab transitions
+- Cursor blinking
+- Scrollbar fading
+- Modal overlays
+
+**High-Performance Rendering**
+- Hardware-accelerated text rendering
+- Efficient handling of large scrollback buffers
+- Low latency input response
+
+**Modern UI Effects**
+- Shadows and borders
+- Rounded corners
+- Color blending and transparency
+
+## Platform Support
+
+GPUI provides native rendering backends for:
+
+- **macOS**: Metal API
+- **Linux**: Vulkan/OpenGL
+- **Windows**: DirectX
+
+<Note>
+GPUI automatically selects the optimal rendering backend for your platform.
+</Note>
+
+## Architecture
+
+Termy's view hierarchy leverages GPUI's component model:
+
+```
+TerminalView (src/terminal_view/mod.rs)
+├── Tab Strip (tab_strip/render.rs)
+├── Terminal Grid (render.rs)
+├── Scrollbar (scrollbar.rs)
+└── Overlays
+    ├── Search Bar (search.rs)
+    ├── Command Palette (command_palette/render.rs)
+    └── AI Input (ai_input.rs)
+```
+
+Each component uses GPUI's declarative rendering API to efficiently update the UI.
+
+## System Requirements
+
+<Warning>
+GPUI requires a GPU with support for modern graphics APIs (Metal, Vulkan, or DirectX 11+).
+</Warning>
+
+### Minimum Requirements
+
+- **macOS**: macOS 10.15+ with Metal support
+- **Linux**: GPU with Vulkan 1.1+ or OpenGL 3.3+
+- **Windows**: GPU with DirectX 11+ support
+
+### Recommended
+
+- Dedicated GPU for optimal performance
+- Up-to-date graphics drivers
+- Display with 60Hz+ refresh rate for smooth animations
+
+## Troubleshooting
+
+If you experience rendering issues:
+
+1. **Update Graphics Drivers**: Ensure you have the latest GPU drivers installed
+2. **Check GPU Compatibility**: Verify your GPU supports the required graphics API
+3. **Monitor GPU Usage**: Use system monitoring tools to check for GPU overload
+
+## Related
+
+- [Themes](/features/themes) - Visual customization powered by GPUI
+- [Search](/features/search) - GPU-accelerated search highlighting

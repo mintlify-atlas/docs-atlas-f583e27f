@@ -1,80 +1,295 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get up and running with Termy in minutes - from first launch to essential commands
 ---
 
-## Get started in three steps
+# Quickstart Guide
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide will get you from installation to productive use of Termy in just a few minutes.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Haven't installed Termy yet? Check out the [Installation Guide](/installation) first.
 </Note>
+
+## Getting Started
+
+<Steps>
+  <Step title="Launch Termy">
+    Open Termy for the first time:
+    
+    - **macOS**: Open from Applications or use Spotlight (`Cmd+Space`, type "Termy")
+    - **Windows**: Launch from Start menu
+    - **Linux**: Run `termy` from your terminal or application launcher
+    
+    You'll see a new terminal window with your default shell.
+  </Step>
+
+  <Step title="Learn the Command Palette">
+    The command palette is your gateway to all Termy features.
+    
+    **Open the command palette:**
+    - **macOS**: `Cmd+P`
+    - **Windows/Linux**: `Ctrl+P`
+    
+    Type to search for commands like:
+    - `new tab` - Create a new terminal tab
+    - `settings` - Open the settings
+    - `theme` - Switch themes
+    - `updates` - Check for updates
+    
+    <Tip>
+      The command palette shows keyboard shortcuts next to each command by default. Use these shortcuts to work faster!
+    </Tip>
+  </Step>
+
+  <Step title="Master Essential Shortcuts">
+    Learn these core shortcuts to navigate Termy efficiently:
+    
+    ### Tab Management
+    
+    <Note>
+      `secondary` means `Cmd` on macOS and `Ctrl` on Windows/Linux
+    </Note>
+    
+    | Action | macOS | Windows/Linux |
+    |--------|-------|---------------|
+    | New tab | `Cmd+T` | `Ctrl+T` |
+    | Close tab | `Cmd+W` | `Ctrl+W` |
+    | Command palette | `Cmd+P` | `Ctrl+P` |
+    | Search | `Cmd+F` | `Ctrl+F` |
+    
+    ### Copy & Paste
+    
+    | Action | macOS | Windows/Linux |
+    |--------|-------|---------------|
+    | Copy | `Cmd+C` | `Ctrl+Shift+C` |
+    | Paste | `Cmd+V` | `Ctrl+Shift+V` |
+    
+    ### Zoom
+    
+    | Action | Shortcut |
+    |--------|----------|
+    | Zoom in | `Cmd/Ctrl +` |
+    | Zoom out | `Cmd/Ctrl -` |
+    | Reset zoom | `Cmd/Ctrl 0` |
+    
+    <Card title="Full Keybindings" icon="keyboard" href="/configuration/keybindings">
+      See all available keyboard shortcuts
+    </Card>
+  </Step>
+
+  <Step title="Configure Basic Settings">
+    Create or edit your config file at `~/.config/termy/config.txt`:
+    
+    **Open your config file:**
+    - Use the command palette (`Cmd/Ctrl+P`) and type "Open config"
+    - Or manually edit `~/.config/termy/config.txt`
+    
+    **Essential settings to customize:**
+    
+    ```txt
+    # Font configuration
+    font_family = JetBrains Mono
+    font_size = 14
+    
+    # Theme
+    theme = termy
+    
+    # Shell (optional - uses system default if not set)
+    # shell = /bin/zsh
+    
+    # Window transparency (0.0 - 1.0)
+    background_opacity = 1
+    
+    # Terminal behavior
+    scrollback_history = 10000
+    cursor_blink = true
+    cursor_style = block
+    ```
+    
+    **Save and restart** Termy to apply your changes (use `Cmd/Ctrl+Q` to quit).
+    
+    <Tip>
+      Changes to most settings require restarting Termy. Use the command palette to run "Restart app" for a quick restart.
+    </Tip>
+  </Step>
+
+  <Step title="Explore Advanced Features">
+    Now that you have the basics, explore more features:
+    
+    ### Search
+    
+    Press `Cmd/Ctrl+F` to search within your terminal:
+    - Use regex patterns for advanced searching
+    - Toggle case-sensitivity
+    - Navigate results with `Cmd/Ctrl+G` (next) and `Cmd/Ctrl+Shift+G` (previous)
+    
+    ### Tab Titles
+    
+    Termy automatically sets smart tab titles based on:
+    - Your current directory
+    - Running commands
+    - Manual renames (use command palette → "Rename tab")
+    
+    ### Theme Switching
+    
+    Open the command palette and type "Switch theme" to preview available themes in real-time.
+    
+    You can also import custom themes - see the [Custom Themes Guide](/guides/custom-themes) for details.
+    
+    ### CLI Installation
+    
+    Install the `termy` CLI command to open files and directories from other terminals:
+    
+    1. Open the command palette (`Cmd/Ctrl+P`)
+    2. Type "Install CLI" and press Enter
+    3. The CLI will be installed to your PATH
+    
+    Then use it like:
+    ```bash
+    termy --version
+    ```
+  </Step>
+</Steps>
+
+## Common Tasks
+
+### Opening Multiple Tabs
+
+Work with multiple terminal sessions using tabs:
+
+1. Press `Cmd/Ctrl+T` to create a new tab
+2. Each tab gets its own shell instance
+3. Close tabs with `Cmd/Ctrl+W`
+
+### Customizing Keybindings
+
+Override default keybindings in `~/.config/termy/config.txt`:
+
+```txt
+# Override a single keybinding
+keybind = secondary-p=toggle_command_palette
+
+# Remove a default binding
+keybind = cmd-w=unbind
+
+# Start from scratch (clear all defaults)
+keybind = clear
+keybind = cmd-p=toggle_command_palette
+keybind = cmd-t=new_tab
+keybind = cmd-w=close_tab
+```
+
+<Card title="Keybindings Reference" icon="keyboard" href="/configuration/keybindings">
+  Complete list of actions and customization options
+</Card>
+
+### Adjusting Font and Appearance
+
+Customize the look in your config file:
+
+```txt
+# Font
+font_family = Fira Code
+font_size = 16
+
+# Window transparency
+background_opacity = 0.95
+background_blur = true
+
+# Padding
+padding_x = 16
+padding_y = 12
+```
+
+### Checking for Updates
+
+Termy includes built-in update checking:
+
+1. Open command palette (`Cmd/Ctrl+P`)
+2. Type "Check for updates"
+3. Follow prompts to install if an update is available
+
+## Tips for Power Users
+
+<CardGroup cols={2}>
+  <Card title="Shell Integration" icon="terminal">
+    Enable `tab_title_shell_integration = true` to export `TERMY_*` environment variables for custom shell prompts.
+  </Card>
+  
+  <Card title="Custom Tab Titles" icon="tag">
+    Use OSC sequences to set custom tab titles from scripts: `echo -e "\033]0;My Tab\007"`
+  </Card>
+  
+  <Card title="Scrollback Control" icon="scroll">
+    Set `inactive_tab_scrollback` to limit memory usage for inactive tabs.
+  </Card>
+  
+  <Card title="Window Size" icon="window-maximize">
+    Set `window_width` and `window_height` in your config for consistent startup size.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+### Termy won't launch
+
+- **macOS**: Run `sudo xattr -d com.apple.quarantine /Applications/Termy.app`
+- **Windows**: Click "More info" → "Run anyway" on SmartScreen warning
+- **Linux**: Ensure you have OpenGL support and updated GPU drivers
+
+### Config changes not applying
+
+Most config changes require restarting Termy:
+
+1. Save your config file
+2. Press `Cmd/Ctrl+Q` to quit Termy
+3. Relaunch Termy
+
+Or use command palette → "Restart app"
+
+### Fonts not working
+
+Make sure the font is installed on your system:
+
+```bash
+# macOS - check installed fonts
+ls ~/Library/Fonts
+
+# Linux - check installed fonts
+fc-list | grep "YourFont"
+```
+
+### Command not found
+
+If `termy` command isn't found after CLI installation:
+
+```bash
+# Check if install directory is in PATH
+echo $PATH
+
+# Add to PATH if needed (bash/zsh)
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+## Next Steps
+
+You're now ready to use Termy productively! Explore these guides to learn more:
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration">
+    Complete reference for all configuration options
+  </Card>
+  
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Full list of shortcuts and customization
+  </Card>
+  
+  <Card title="Customization Guide" icon="palette" href="/guides/custom-themes">
+    Themes, colors, and advanced customization
+  </Card>
+  
+  <Card title="FAQ" icon="question" href="/introduction">
+    Frequently asked questions
+  </Card>
+</CardGroup>

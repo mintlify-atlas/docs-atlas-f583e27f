@@ -1,0 +1,279 @@
+---
+title: Installation
+description: Install Termy on macOS, Windows, or Linux with platform-specific instructions
+---
+
+# Installing Termy
+
+This guide will help you install Termy on your platform and verify the installation.
+
+<Note>
+  Termy is not yet code-signed. You may see security warnings on first launch - see the platform-specific instructions below for how to resolve them.
+</Note>
+
+## Download Termy
+
+Download the latest release from the [GitHub Releases page](https://github.com/lassejlv/termy/releases/latest) or visit [termy.run](https://termy.run/#download).
+
+Choose the appropriate asset for your platform:
+- **macOS**: `.dmg` file
+- **Windows**: `Setup.exe` installer
+- **Linux**: `.AppImage` or `.tar.gz`
+
+## Platform-Specific Installation
+
+<Tabs>
+  <Tab title="macOS">
+    ### macOS Installation
+
+    <Steps>
+      <Step title="Download the DMG">
+        Download the `.dmg` file from the releases page.
+      </Step>
+
+      <Step title="Install the Application">
+        1. Open the downloaded `.dmg` file
+        2. Drag `Termy.app` into your `Applications` folder
+      </Step>
+
+      <Step title="Handle Gatekeeper Warning">
+        Because Termy is not yet code-signed, macOS Gatekeeper will block the first launch.
+        
+        **To bypass the warning:**
+        
+        ```bash
+        sudo xattr -d com.apple.quarantine /Applications/Termy.app
+        ```
+        
+        Then launch Termy from Applications.
+      </Step>
+
+      <Step title="Launch Termy">
+        Open Termy from your Applications folder or use Spotlight (`Cmd+Space`, type "Termy").
+      </Step>
+    </Steps>
+
+    <Tip>
+      You can also install via Homebrew once a cask is available.
+    </Tip>
+  </Tab>
+
+  <Tab title="Windows">
+    ### Windows Installation
+
+    <Steps>
+      <Step title="Download the Installer">
+        Download the `Setup.exe` file from the releases page.
+      </Step>
+
+      <Step title="Run the Installer">
+        Double-click the `Setup.exe` file to launch the installer.
+      </Step>
+
+      <Step title="Handle SmartScreen Warning">
+        Because Termy is not yet code-signed, Windows SmartScreen may show a warning.
+        
+        **To proceed:**
+        
+        1. Click **More info**
+        2. Click **Run anyway**
+      </Step>
+
+      <Step title="Complete Installation">
+        Follow the installer prompts to complete the installation.
+      </Step>
+
+      <Step title="Launch Termy">
+        Start Termy from the Start menu or desktop shortcut.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Linux">
+    ### Linux Installation
+
+    Termy offers multiple installation methods for Linux:
+
+    <Tabs>
+      <Tab title="One-Line Install">
+        ### Quick Install Script
+
+        The fastest way to install Termy on Linux:
+
+        ```bash
+        curl -fsSL https://raw.githubusercontent.com/lassejlv/termy/main/scripts/install-linux.sh | bash
+        ```
+
+        This script will:
+        - Detect your system architecture (x86_64 or aarch64)
+        - Download the latest release
+        - Install to `~/.local/bin/termy`
+        - Provide instructions to add to your PATH if needed
+
+        <Note>
+          The installer requires `curl`, `tar`, and `grep` to be available on your system.
+        </Note>
+      </Tab>
+
+      <Tab title="AppImage">
+        ### AppImage (Universal)
+
+        <Steps>
+          <Step title="Download AppImage">
+            Download the `.AppImage` file from the releases page.
+          </Step>
+
+          <Step title="Make Executable">
+            ```bash
+            chmod +x Termy-*.AppImage
+            ```
+          </Step>
+
+          <Step title="Run Termy">
+            ```bash
+            ./Termy-*.AppImage
+            ```
+          </Step>
+        </Steps>
+
+        <Tip>
+          You can move the AppImage to `~/.local/bin` or `/usr/local/bin` for easy access.
+        </Tip>
+      </Tab>
+
+      <Tab title="Tarball">
+        ### Tarball (Manual Install)
+
+        <Steps>
+          <Step title="Download Tarball">
+            Download the `.tar.gz` file for your architecture (x86_64 or aarch64).
+          </Step>
+
+          <Step title="Extract Archive">
+            ```bash
+            tar -xzf Termy-*.tar.gz
+            ```
+          </Step>
+
+          <Step title="Install">
+            Option 1 - Use the included install script:
+            ```bash
+            cd termy
+            ./install.sh
+            ```
+
+            Option 2 - Manual install:
+            ```bash
+            sudo cp termy/termy /usr/local/bin/
+            sudo chmod +x /usr/local/bin/termy
+            ```
+          </Step>
+        </Steps>
+      </Tab>
+
+      <Tab title="Arch Linux">
+        ### Arch Linux (AUR)
+
+        Install from the Arch User Repository using your favorite AUR helper:
+
+        ```bash
+        paru -S termy-bin
+        ```
+
+        Or with `yay`:
+
+        ```bash
+        yay -S termy-bin
+        ```
+      </Tab>
+    </Tabs>
+
+    ### Adding to PATH
+
+    If you installed to `~/.local/bin` and the `termy` command isn't found, add it to your PATH:
+
+    <CodeGroup>
+      ```bash bash/zsh
+      # Add to ~/.bashrc or ~/.zshrc
+      export PATH="$HOME/.local/bin:$PATH"
+      ```
+
+      ```fish fish
+      # Add to ~/.config/fish/config.fish
+      set -gx PATH $HOME/.local/bin $PATH
+      ```
+    </CodeGroup>
+
+    Then reload your shell configuration:
+    ```bash
+    source ~/.bashrc  # or ~/.zshrc for zsh
+    ```
+  </Tab>
+</Tabs>
+
+## Verify Installation
+
+After installation, verify that Termy is installed correctly:
+
+```bash
+termy --version
+```
+
+You should see output showing the Termy version (e.g., `0.1.40`).
+
+<Note>
+  If the `termy` command is not found, you may need to add the installation directory to your PATH. See the platform-specific instructions above.
+</Note>
+
+## System Requirements
+
+Before installing, ensure your system meets these requirements:
+
+- **Operating System**: macOS 10.15+, Windows 10/11, or modern Linux distribution
+- **GPU**: OpenGL support required (most modern GPUs, including integrated graphics)
+- **Memory**: 4GB+ RAM recommended
+- **Display**: Any resolution (hidpi/retina displays supported)
+
+## Troubleshooting
+
+### macOS: "App is damaged" error
+
+If you see an error that the app is damaged, run:
+
+```bash
+sudo xattr -d com.apple.quarantine /Applications/Termy.app
+```
+
+### Windows: SmartScreen blocks installation
+
+Click **More info**, then **Run anyway** to proceed with installation.
+
+### Linux: Command not found
+
+Make sure the installation directory is in your PATH:
+
+```bash
+echo $PATH
+```
+
+If `~/.local/bin` is not listed, add it to your shell configuration file.
+
+### GPU/Graphics Issues
+
+Termy requires OpenGL support. If you experience rendering issues:
+
+1. Update your GPU drivers
+2. Check that your system supports OpenGL
+3. Try running with debugging: `RUST_LOG=info termy`
+
+## Next Steps
+
+Now that Termy is installed, learn how to use it:
+
+<Card title="Quickstart Guide" icon="bolt" href="/quickstart">
+  Learn the basics and start using Termy
+</Card>
+
+<Card title="Configuration" icon="gear" href="/configuration">
+  Customize Termy to match your preferences
+</Card>

@@ -1,0 +1,204 @@
+---
+title: 'CLI Overview'
+description: 'Command-line interface for Termy terminal emulator'
+---
+
+Termy provides a powerful command-line interface (`termy-cli`) for managing configuration, listing system resources, and accessing terminal features without opening the GUI.
+
+## Installation
+
+The CLI tool is installed automatically with Termy and is available as:
+
+- **Binary name**: `termy-cli`
+- **Version**: Check with `termy-cli -version`
+
+<Note>
+The CLI tool is separate from the main Termy application and can be used independently to manage your configuration and inspect system resources.
+</Note>
+
+## Quick Start
+
+View all available commands:
+
+<CodeGroup>
+```bash Help
+termy-cli -help
+```
+
+```bash Interactive TUI
+termy-cli -tui
+```
+</CodeGroup>
+
+## Available Commands
+
+### Information & Discovery
+
+| Command | Description |
+|---------|-------------|
+| `-help` | Show all available commands |
+| `-version` | Display version information |
+| `-list-fonts` | List available monospace fonts on your system |
+| `-list-themes` | Show all built-in color themes |
+| `-list-keybinds` | Display all keyboard shortcuts |
+| `-list-colors` | Show colors for the current theme |
+| `-list-actions` | List available keybind actions |
+
+### Configuration Management
+
+| Command | Description |
+|---------|-------------|
+| `-show-config` | Display current configuration |
+| `-edit-config` | Open config file in your editor |
+| `-validate-config` | Check configuration file for errors |
+| `-prettify-config` | Format config file (removes comments) |
+
+### Interactive Interface
+
+| Command | Description |
+|---------|-------------|
+| `-tui` | Launch interactive TUI for all CLI features |
+
+### Updates
+
+| Command | Description |
+|---------|-------------|
+| `-update` | Check for available updates |
+
+## Common Usage Patterns
+
+### Discovering Available Resources
+
+Before customizing your terminal, explore what's available:
+
+<CodeGroup>
+```bash List Fonts
+# See all monospace fonts on your system
+termy-cli -list-fonts
+```
+
+```bash List Themes
+# View all built-in themes
+termy-cli -list-themes
+```
+
+```bash View Current Theme Colors
+# Inspect the active theme's color palette
+termy-cli -list-colors
+```
+</CodeGroup>
+
+### Managing Configuration
+
+Quickly edit and validate your configuration:
+
+<CodeGroup>
+```bash Edit Config
+# Opens config in $EDITOR (or platform default)
+termy-cli -edit-config
+```
+
+```bash Validate Config
+# Check for errors before restarting
+termy-cli -validate-config
+```
+
+```bash Show Current Config
+# Display your current settings
+termy-cli -show-config
+```
+</CodeGroup>
+
+### Working with Keybindings
+
+Inspect and discover keyboard shortcuts:
+
+<CodeGroup>
+```bash List All Keybinds
+# See all keyboard shortcuts and their actions
+termy-cli -list-keybinds
+```
+
+```bash List Available Actions
+# View all actions you can bind to keys
+termy-cli -list-actions
+```
+</CodeGroup>
+
+## Interactive TUI Mode
+
+For a more visual experience, launch the interactive TUI:
+
+```bash
+termy-cli -tui
+```
+
+The TUI provides:
+- Easy navigation between all CLI features
+- Visual display of configuration, themes, fonts, and keybindings
+- Live validation feedback
+- Quick access to edit config
+
+See [TUI Interface](/cli/tui) for detailed documentation.
+
+## Configuration File Location
+
+The CLI operates on your Termy configuration file located at:
+
+- **macOS**: `~/.config/termy/config`
+- **Linux**: `~/.config/termy/config`
+- **Windows**: `%APPDATA%\termy\config`
+
+<Tip>
+If the config file doesn't exist, Termy uses default settings. Use `termy-cli -edit-config` to create it.
+</Tip>
+
+## Output Formats
+
+CLI commands output plain text for easy parsing and scripting:
+
+```bash
+# Pipe font list to grep
+termy-cli -list-fonts | grep -i "mono"
+
+# Save theme list to file
+termy-cli -list-themes > themes.txt
+
+# Count available actions
+termy-cli -list-actions | wc -l
+```
+
+## Exit Codes
+
+The CLI follows standard exit code conventions:
+
+- **0**: Success
+- **1**: Error (invalid config, validation failure, etc.)
+
+<CodeGroup>
+```bash Validation Example
+termy-cli -validate-config
+if [ $? -eq 0 ]; then
+  echo "Config is valid"
+else
+  echo "Config has errors"
+fi
+```
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="List Fonts" icon="font" href="/cli/list-fonts">
+    Discover available monospace fonts
+  </Card>
+  <Card title="List Themes" icon="palette" href="/cli/list-themes">
+    Browse built-in color themes
+  </Card>
+  <Card title="Config Management" icon="gear" href="/cli/config-management">
+    Edit and validate configuration
+  </Card>
+  <Card title="Interactive TUI" icon="terminal" href="/cli/tui">
+    Use the visual interface
+  </Card>
+</CardGroup>

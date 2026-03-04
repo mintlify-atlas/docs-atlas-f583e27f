@@ -1,0 +1,239 @@
+---
+title: 'List Fonts'
+description: 'Discover available monospace fonts on your system'
+---
+
+The `-list-fonts` command displays all monospace fonts available on your system that can be used with Termy.
+
+## Usage
+
+```bash
+termy-cli -list-fonts
+```
+
+## What It Does
+
+This command queries your system's font library and returns a sorted list of monospace fonts suitable for terminal use.
+
+### Platform-Specific Behavior
+
+<Tabs>
+  <Tab title="macOS">
+    Uses Core Text APIs to enumerate all installed font families with monospace characteristics.
+    
+    ```bash
+    termy-cli -list-fonts
+    ```
+    
+    Returns all fonts from:
+    - System fonts (`/System/Library/Fonts/`)
+    - User fonts (`~/Library/Fonts/`)
+    - Third-party fonts
+  </Tab>
+  
+  <Tab title="Linux">
+    Uses `fc-list` (fontconfig) to query monospace fonts.
+    
+    ```bash
+    termy-cli -list-fonts
+    ```
+    
+    Falls back to common monospace fonts if `fc-list` is unavailable:
+    - DejaVu Sans Mono
+    - Liberation Mono
+    - Fira Code
+    - JetBrains Mono
+    - Source Code Pro
+    - And more...
+  </Tab>
+  
+  <Tab title="Windows">
+    Returns a curated list of common Windows monospace fonts:
+    - Consolas
+    - Courier New
+    - Lucida Console
+    - Cascadia Code
+    - Cascadia Mono
+    - And more...
+    
+    <Note>
+    On Windows, this is a partial list of common fonts rather than a complete system enumeration.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Example Output
+
+```
+Anonymous Pro
+Cascadia Code
+Cascadia Mono
+Commit Mono
+Courier New
+DejaVu Sans Mono
+Fira Code
+Fira Mono
+Geist Mono
+Hack
+IBM Plex Mono
+Inconsolata
+JetBrains Mono
+Menlo
+Messina Sans Mono
+Monaco
+Roboto Mono
+SF Mono
+Source Code Pro
+Ubuntu Mono
+```
+
+## Use Cases
+
+### Finding a Specific Font
+
+Combine with `grep` to search for fonts:
+
+<CodeGroup>
+```bash Search by Name
+termy-cli -list-fonts | grep -i "fira"
+```
+
+```bash Example Output
+Fira Code
+Fira Mono
+```
+</CodeGroup>
+
+### Checking Font Availability
+
+Verify a font is installed before using it in your config:
+
+<CodeGroup>
+```bash Check Installation
+if termy-cli -list-fonts | grep -q "JetBrains Mono"; then
+  echo "JetBrains Mono is installed"
+else
+  echo "JetBrains Mono not found"
+fi
+```
+</CodeGroup>
+
+### Saving Font List
+
+Export the list for reference:
+
+```bash
+termy-cli -list-fonts > available-fonts.txt
+```
+
+## Configuring Font in Termy
+
+Once you've identified a font, set it in your configuration:
+
+<CodeGroup>
+```bash Edit Config
+termy-cli -edit-config
+```
+
+```toml Configuration Example
+# Set your preferred font
+font = "JetBrains Mono"
+font_size = 14
+```
+</CodeGroup>
+
+<Note>
+The font name must match exactly as it appears in the `-list-fonts` output. Font names are case-sensitive.
+</Note>
+
+## Font Requirements
+
+Termy displays monospace fonts that meet these criteria:
+
+- **Fixed width**: Every character has the same width
+- **Installed**: Present in your system font directories
+- **Accessible**: Readable by the current user
+
+<Warning>
+Proportional (variable-width) fonts are not suitable for terminal use and won't appear in this list.
+</Warning>
+
+## Popular Terminal Fonts
+
+Here are some widely-used monospace fonts for terminals:
+
+| Font | Characteristics | Best For |
+|------|----------------|----------|
+| **JetBrains Mono** | Ligatures, increased height | Coding, long sessions |
+| **Fira Code** | Programming ligatures | Code readability |
+| **SF Mono** (macOS) | Clean, modern | macOS users |
+| **Cascadia Code** | Microsoft's modern font | Windows users |
+| **Hack** | High legibility | Small font sizes |
+| **Source Code Pro** | Adobe's open-source font | Professional coding |
+| **Menlo** (macOS) | Default macOS terminal font | macOS defaults |
+| **DejaVu Sans Mono** | Unicode coverage | Multi-language support |
+
+## Troubleshooting
+
+### No Fonts Listed
+
+<AccordionGroup>
+  <Accordion title="Linux: fc-list not found">
+    Install fontconfig:
+    
+    ```bash
+    # Ubuntu/Debian
+    sudo apt install fontconfig
+    
+    # Fedora
+    sudo dnf install fontconfig
+    
+    # Arch
+    sudo pacman -S fontconfig
+    ```
+  </Accordion>
+  
+  <Accordion title="Font doesn't appear after installation">
+    Refresh your font cache:
+    
+    **macOS**: Restart Font Book or restart your system
+    
+    **Linux**:
+    ```bash
+    fc-cache -fv
+    ```
+    
+    **Windows**: Restart your system
+  </Accordion>
+</AccordionGroup>
+
+### Font Appears but Doesn't Work in Termy
+
+1. Verify exact font name (case-sensitive):
+   ```bash
+   termy-cli -list-fonts | grep -i "yourfont"
+   ```
+
+2. Check configuration syntax:
+   ```bash
+   termy-cli -validate-config
+   ```
+
+3. Ensure the font is truly monospace
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="Show Config" icon="file-code" href="/cli/config-management#show-config">
+    View your current font setting
+  </Card>
+  <Card title="Edit Config" icon="pen-to-square" href="/cli/config-management#edit-config">
+    Update your font configuration
+  </Card>
+  <Card title="Interactive TUI" icon="terminal" href="/cli/tui">
+    Browse fonts visually
+  </Card>
+  <Card title="Font Configuration" icon="gear" href="/configuration/appearance#font">
+    Font configuration reference
+  </Card>
+</CardGroup>

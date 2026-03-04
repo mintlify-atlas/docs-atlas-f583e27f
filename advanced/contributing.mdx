@@ -1,0 +1,475 @@
+---
+title: Contributing
+description: How to contribute to Termy development
+---
+
+Thank you for considering contributing to Termy! This guide covers everything you need to get started.
+
+## Getting Started
+
+### Prerequisites
+
+1. **Development environment**: Follow the [Building from Source](/advanced/building) guide to set up Rust and dependencies.
+
+2. **Familiarity with**:
+   - Rust programming language
+   - Terminal emulation concepts (VT100, ANSI escape codes)
+   - [GPUI](https://gpui.rs) (Termy's UI framework) - basic understanding helpful
+
+3. **Tools**:
+   - Git for version control
+   - [just](https://github.com/casey/just) task runner (optional but recommended)
+   - Code editor with Rust support (VS Code + rust-analyzer, RustRover, etc.)
+
+### Fork and Clone
+
+1. Fork the [Termy repository](https://github.com/lassejlv/termy) on GitHub
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/termy.git
+   cd termy
+   ```
+3. Add upstream remote:
+   ```bash
+   git remote add upstream https://github.com/lassejlv/termy.git
+   ```
+
+## Development Setup
+
+### Build and Run
+
+Verify your setup:
+
+```bash
+# Check all workspace crates
+cargo check --workspace
+
+# Run Termy in development mode
+cargo run
+
+# Run with logging
+RUST_LOG=info cargo run
+```
+
+### Enable Debug Features
+
+Development builds include extra diagnostics:
+
+```bash
+# Render performance metrics (debug builds only)
+RUST_LOG=info TERMY_RENDER_METRICS=1 cargo run
+```
+
+See [Building from Source](/advanced/building#debug-features) for more debug options.
+
+### Run Tests
+
+```bash
+# All workspace tests
+cargo test --workspace
+
+# Specific crate tests
+cargo test -p termy_terminal_ui
+
+# Integration tests (requires tmux >= 3.3)
+just test-tmux-integration
+```
+
+### Architecture Validation
+
+Before submitting changes, run boundary checks:
+
+```bash
+./scripts/check-boundaries.sh
+```
+
+Or use just:
+
+```bash
+just check-boundaries
+```
+
+This ensures:
+- Dependency boundaries are respected (e.g., CLI crates don't depend on GPUI)
+- Generated documentation is up-to-date
+
+See [Architecture](/advanced/architecture#dependency-architecture) for boundary rules.
+
+## Code Structure
+
+### Key Areas
+
+Understand where to make changes:
+
+<AccordionGroup>
+  <Accordion title="Terminal Emulation & Rendering">
+    **Location**: `crates/terminal_ui/`
+
+    **Covers**:
+    - Terminal process management (`runtime.rs`)
+    - Grid rendering and caching (`grid.rs`)
+    - PTY handling (Unix/Windows)
+    - Tmux integration (`tmux/`)
+    - Link detection (`links.rs`)
+
+    **Testing**: Unit tests + tmux integration tests
+  </Accordion>
+
+  <Accordion title="UI & User Experience">
+    **Location**: `src/`
+
+    **Covers**:
+    - Terminal view component (`terminal_view/`)
+    - Settings UI (`settings_view/`)
+    - Menus and actions (`menus.rs`, `commands.rs`)
+    - Window management (`main.rs`)
+    - Input handling (`text_input.rs`)
+
+    **Framework**: GPUI components
+  </Accordion>
+
+  <Accordion title="Configuration System">
+    **Location**: `crates/config_core/`, `src/config/`
+
+    **Covers**:
+    - Config data structures (`config_core`)
+    - Config loading and parsing (`src/config/`)
+    - Theme integration
+    - Validation and defaults
+
+    **Docs**: Auto-generated via `just generate-config-doc`
+  </Accordion>
+
+  <Accordion title="Commands & Keybinds">
+    **Location**: `crates/command_core/`, `src/keybindings/`
+
+    **Covers**:
+    - Command definitions (`command_core`)
+    - Keybind resolution and parsing
+    - Default keybind configuration
+    - GPUI action integration (`src/keybindings/`)
+
+    **Critical**: Respect the [command boundary](/advanced/architecture#command-boundary)
+
+    **Docs**: Auto-generated via `just generate-keybindings-doc`
+  </Accordion>
+
+  <Accordion title="Themes">
+    **Location**: `crates/theme_core/`, `crates/themes/`
+
+    **Covers**:
+    - Theme data structures (`theme_core`)
+    - Built-in themes (`themes`)
+    - Theme validation
+
+    **Adding themes**: Add to `crates/themes/src/`
+  </Accordion>
+
+  <Accordion title="CLI Tool">
+    **Location**: `crates/cli/`, `crates/cli_install_core/`
+
+    **Covers**:
+    - `termy-cli` binary commands
+    - Config validation
+    - Shell integration installation
+    - TUI-based previews
+
+    **Boundary**: Must NOT depend on GPUI
+  </Accordion>
+
+  <Accordion title="Auto-Update System">
+    **Location**: `crates/auto_update/`, `crates/auto_update_ui/`
+
+    **Covers**:
+    - Update checking (`auto_update`)
+    - Download and installation
+    - Update UI notifications (`auto_update_ui`)
+
+    **Note**: Uses `termy_release_core` for version metadata
+  </Accordion>
+</AccordionGroup>
+
+See the [Architecture guide](/advanced/architecture) for detailed crate descriptions.
+
+### Dependency Rules
+
+Termy enforces strict dependency boundaries via CI:
+
+**Forbidden dependencies** (will fail CI):
+- `termy_command_core` → `gpui`
+- `termy_command_core` → `termy_config_core`
+- `termy_config_core` → `termy_themes`
+- `termy_cli` or `termy_cli_install_core` → `gpui`
+
+Rationale: Keeps domain logic pure and enables CLI tools to work without GPUI.
+
+**Check locally**:
+```bash
+cargo tree -p termy_command_core | grep gpui  # Should be empty
+```
+
+## Making Changes
+
+### Create a Branch
+
+Branch from `main` with a descriptive name:
+
+```bash
+git checkout -b feature/add-split-pane-keybind
+# or
+git checkout -b fix/cursor-rendering-bug
+```
+
+Branch naming:
+- `feature/` for new features
+- `fix/` for bug fixes
+- `refactor/` for refactoring
+- `docs/` for documentation
+
+### Code Style
+
+Termy follows standard Rust conventions:
+
+```bash
+# Format code
+cargo fmt --all
+
+# Lint with Clippy
+cargo clippy --workspace --all-targets
+```
+
+**Guidelines**:
+- Use `cargo fmt` before committing
+- Address all `cargo clippy` warnings
+- Add comments for non-obvious logic
+- Write doc comments for public APIs
+- Follow existing patterns in the codebase
+
+### Testing Your Changes
+
+1. **Unit tests**: Add tests in the same file or `tests/` module
+   ```bash
+   cargo test -p your_crate
+   ```
+
+2. **Integration tests**: For terminal features, consider tmux tests
+   ```bash
+   just test-tmux-integration
+   ```
+
+3. **Manual testing**: Run Termy and verify behavior
+   ```bash
+   cargo run --release
+   ```
+
+4. **Render metrics**: Check for performance regressions
+   ```bash
+   RUST_LOG=info TERMY_RENDER_METRICS=1 cargo run
+   ```
+
+### Update Generated Docs
+
+If you modify commands or config:
+
+```bash
+# Regenerate documentation
+just generate-keybindings-doc
+just generate-config-doc
+
+# Verify they're correct
+just check-keybindings-doc
+just check-config-doc
+```
+
+CI will fail if generated docs are stale.
+
+## Submitting a Pull Request
+
+### Before Submitting
+
+Run the full validation suite:
+
+```bash
+# Format code
+cargo fmt --all
+
+# Lint
+cargo clippy --workspace --all-targets -- -D warnings
+
+# Test
+cargo test --workspace
+
+# Architecture checks
+./scripts/check-boundaries.sh
+```
+
+Or use a single command:
+
+```bash
+just check && cargo test --workspace && ./scripts/check-boundaries.sh
+```
+
+### Commit Messages
+
+Write clear, descriptive commit messages:
+
+**Good**:
+```
+Add Cmd+D keybind for split-pane-right
+
+Implements #123. Adds default keybind Cmd+D (macOS) and Ctrl+D (Windows/Linux)
+for splitting the current pane vertically.
+```
+
+**Less good**:
+```
+fix bug
+```
+
+**Tips**:
+- Use imperative mood ("Add feature" not "Added feature")
+- Reference issue numbers ("Fixes #123")
+- Explain *why* if not obvious from *what*
+
+### Create the PR
+
+1. Push your branch:
+   ```bash
+   git push origin feature/your-branch-name
+   ```
+
+2. Open a pull request on GitHub
+
+3. Fill out the PR template:
+   - **Description**: Explain what and why
+   - **Screenshots/Videos**: For UI changes (highly appreciated!)
+   - **Related Issues**: Link issues ("Closes #123")
+   - **Checklist**: Confirm no overlapping PRs
+
+### PR Review Process
+
+1. **CI checks**: Automated checks must pass:
+   - Rust formatting (`cargo fmt`)
+   - Architecture boundary validation
+   - Tmux integration tests (macOS)
+
+2. **Code review**: Maintainers will review and may request changes
+
+3. **Iterate**: Address feedback, push updates:
+   ```bash
+   # Make changes
+   git add .
+   git commit -m "Address review feedback"
+   git push
+   ```
+
+4. **Merge**: Once approved, maintainers will merge your PR
+
+## Types of Contributions
+
+### Bug Fixes
+
+1. Check [existing issues](https://github.com/lassejlv/termy/issues) for duplicates
+2. Create an issue if one doesn't exist (use bug report template)
+3. Reference the issue in your PR ("Fixes #123")
+4. Include steps to reproduce + test that verify the fix
+
+### New Features
+
+1. **Discuss first**: Open a feature request issue to discuss design
+2. Wait for maintainer feedback before implementing (avoid wasted work)
+3. Break large features into smaller PRs when possible
+4. Update documentation as needed
+
+### Documentation
+
+Documentation improvements are always welcome:
+
+- Fix typos or clarify existing docs
+- Add examples or tutorials
+- Document undocumented features
+- Improve API doc comments
+
+**Note**: Don't manually edit generated docs (`docs/keybindings.md`, etc.); instead, update the generator in `crates/xtask/`.
+
+### Themes
+
+To contribute a new theme:
+
+1. Add theme to `crates/themes/src/`
+2. Follow existing theme structure
+3. Test with:
+   ```bash
+   cargo run -p termy_cli -- preview-theme your-theme-name
+   ```
+4. Include a screenshot in your PR
+
+### Tests
+
+Improving test coverage helps everyone:
+
+- Add unit tests for edge cases
+- Add integration tests for complex features
+- Improve existing test clarity
+
+## Getting Help
+
+### Questions
+
+- **Architecture questions**: See [Architecture guide](/advanced/architecture)
+- **Build issues**: See [Building from Source](/advanced/building)
+- **GitHub Discussions**: For general questions
+- **Issues**: For bug reports or feature requests
+
+### Codebase Navigation
+
+Start with these files:
+
+- **Entry point**: `src/main.rs`
+- **Terminal view**: `src/terminal_view/mod.rs`
+- **Terminal runtime**: `crates/terminal_ui/src/runtime.rs`
+- **Commands**: `crates/command_core/src/lib.rs`
+- **Config**: `crates/config_core/src/lib.rs`
+
+Use `cargo doc --open` to browse API documentation.
+
+### CI Failures
+
+Common CI failures:
+
+1. **Formatting**: Run `cargo fmt --all`
+2. **Boundary check**: Run `./scripts/check-boundaries.sh` locally
+3. **Stale docs**: Run `just generate-keybindings-doc && just generate-config-doc`
+4. **Tmux tests**: These only run on macOS CI; install tmux >= 3.3 to test locally
+
+## Code of Conduct
+
+Be respectful and constructive:
+
+- Welcome newcomers and answer questions patiently
+- Provide constructive feedback in reviews
+- Respect maintainer decisions on scope and direction
+- Focus on technical merit, not personal preferences
+
+Termy aims to be an inclusive and welcoming project.
+
+## Recognition
+
+All contributors are valued! Contributions are recognized via:
+
+- GitHub contribution graph
+- Release notes for significant features
+- Community appreciation
+
+Thank you for making Termy better!
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the [MIT License](https://github.com/lassejlv/termy/blob/main/LICENSE).
+
+## Next Steps
+
+- [Architecture](/advanced/architecture) - Deep dive into codebase structure
+- [Building from Source](/advanced/building) - Detailed build instructions
+- [Configuration](/configuration/overview) - Understand configuration system
+- [GitHub Issues](https://github.com/lassejlv/termy/issues) - Find issues to work on

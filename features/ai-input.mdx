@@ -1,0 +1,411 @@
+---
+title: AI Input
+description: Context-aware AI assistance with OpenAI and Gemini integration
+---
+
+Termy includes built-in AI assistance that can analyze your terminal context and help with commands, debugging, and shell scripting.
+
+## Overview
+
+The AI Input feature provides:
+
+- **Context-Aware Assistance**: AI sees the last 50 lines of your terminal output
+- **Multiple Providers**: Support for OpenAI and Google Gemini
+- **Command Suggestions**: Get commands directly inserted into your terminal
+- **Smart Response Handling**: Automatic extraction of commands from markdown code blocks
+
+## Supported Providers
+
+Termy supports two AI providers:
+
+### OpenAI
+
+- **Default Model**: `gpt-5-mini` (from `crates/openai/src/lib.rs:4`)
+- **API Endpoint**: `https://api.openai.com/v1/chat/completions`
+- **Configurable Models**: Any GPT model or o-series model
+
+### Google Gemini
+
+- **Default Model**: `gemini-2.5-flash` (from `crates/gemini/src/lib.rs:4`)
+- **API Endpoint**: `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`
+- **Configurable Models**: Any Gemini model
+
+<Note>
+Both providers use OpenAI-compatible chat completion APIs for consistency.
+</Note>
+
+## Configuration
+
+Configure AI settings through Settings > Advanced > AI:
+
+```json
+{
+  "ai_provider": "OpenAi",  // or "Gemini"
+  "openai_api_key": "sk-...",
+  "gemini_api_key": "...",
+  "openai_model": "gpt-5-mini"  // Optional: override default model
+}
+```
+
+### API Keys
+
+**OpenAI:**
+1. Get your API key from [platform.openai.com](https://platform.openai.com/api-keys)
+2. Set `openai_api_key` in configuration
+
+**Gemini:**
+1. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Set `gemini_api_key` in configuration
+
+<Warning>
+API keys are stored in your configuration file. Keep this file secure and never commit it to version control.
+</Warning>
+
+## Usage
+
+### Opening AI Input
+
+**Via Command:**
+```
+ToggleAiInput
+```
+
+**Via Command Palette:**
+1. Open command palette
+2. Type "AI Input"
+3. Press Enter
+
+This opens a modal input at the top of the window (width: 640px).
+
+### Submitting Queries
+
+1. Type your question or request
+2. Press `Enter` to submit
+3. Wait for the AI response (loading toast appears)
+4. Response is inserted into your terminal input buffer
+
+**Example Queries:**
+- "Find all JavaScript files modified in the last day"
+- "Explain this error"
+- "Create a git commit message for these changes"
+- "Write a command to compress all PDFs in this directory"
+
+### Keyboard Controls
+
+- `Enter` - Submit query to AI
+- `Escape` - Close AI input without submitting
+
+## How It Works
+
+### Context Collection
+
+When you open AI input, Termy captures terminal context:
+
+```rust
+// From src/terminal_view/ai_input.rs:152
+const AI_CONTEXT_LINES: i32 = 50;
+
+fn get_terminal_context_for_ai(&self) -> String {
+    // Get last 50 lines of terminal output
+    // Includes scrollback history if available
+}
+```
+
+The context includes:
+- Recent command output
+- Error messages
+- Current working directory (if visible)
+- Command prompts
+
+### Request Flow
+
+1. **User submits query** → Input text sent to AI
+2. **Context bundled** → Last 50 terminal lines attached
+3. **System prompt added**:
+   ```
+   You are a helpful terminal assistant. The user will provide terminal context
+   (recent commands and output). Help them with their question. When suggesting
+   commands, be concise and provide only the command they should run.
+   If they ask for a command, respond with just the command, no explanation unless asked.
+   ```
+4. **API called** → Request sent to configured provider
+5. **Response processed** → Markdown code blocks stripped
+6. **Command inserted** → Response placed in terminal input
+
+### Response Processing
+
+Termy automatically strips markdown formatting from AI responses:
+
+```rust
+// Handles formats like:
+// ```bash
+// git status
+// ```
+// or:
+// `git status`
+
+fn strip_markdown_code_block(text: &str) -> String
+```
+
+This ensures clean command insertion without extra formatting.
+
+## Response Display
+
+### Loading State
+
+```
+"Sending to AI (gpt-5-mini)..."
+```
+
+Shows the configured model name during processing.
+
+### Success Toast
+
+```
+"AI: git commit -m 'Add feature'..."
+```
+
+Truncated to 200 characters for display.
+
+### Error Handling
+
+```
+"AI error: {error message}"
+```
+
+Shown if:
+- API key is missing or invalid
+- Network request fails
+- API returns an error
+- Response parsing fails
+
+## Implementation Details
+
+### OpenAI Client
+
+Location: `crates/openai/src/lib.rs`
+
+```rust
+pub struct OpenAiClient {
+    api_key: String,
+    model: String,
+}
+
+impl OpenAiClient {
+    pub fn message_with_terminal_context(
+        &self,
+        user_message: impl Into<String>,
+        terminal_content: impl Into<String>,
+    ) -> Result<String, OpenAiError>
+}
+```
+
+### Gemini Client
+
+Location: `crates/gemini/src/lib.rs`
+
+```rust
+pub struct GeminiClient {
+    api_key: String,
+    model: String,
+}
+
+impl GeminiClient {
+    pub fn message_with_terminal_context(
+        &self,
+        user_message: impl Into<String>,
+        terminal_content: impl Into<String>,
+    ) -> Result<String, GeminiError>
+}
+```
+
+Both clients use blocking HTTP via `ureq` and run in background threads via `smol::unblock`.
+
+### UI Component
+
+Location: `src/terminal_view/ai_input.rs`
+
+```rust
+pub(super) fn render_ai_input_modal(&mut self, cx: &mut Context<Self>) -> AnyElement {
+    // Renders a centered modal with:
+    // - 640px width
+    // - Input field
+    // - Keyboard hints
+}
+```
+
+The modal uses the same styling as the command palette for consistency.
+
+## Use Cases
+
+### Command Generation
+
+**Query:** "Find all files larger than 100MB"
+
+**Response:**
+```bash
+find . -type f -size +100M
+```
+
+### Error Debugging
+
+**Query:** "What does this error mean?"
+
+AI analyzes the error in your terminal context and provides an explanation.
+
+### Script Writing
+
+**Query:** "Write a script to backup all .txt files to ~/backup"
+
+**Response:**
+```bash
+mkdir -p ~/backup && find . -name '*.txt' -exec cp {} ~/backup \;
+```
+
+### Git Assistance
+
+**Query:** "Create a commit message for these changes"
+
+AI reviews the `git diff` output in your terminal and suggests a commit message.
+
+## Best Practices
+
+### Context Awareness
+
+<Tip>
+Run commands that produce relevant output before asking the AI for help. The AI can only see the last 50 lines.
+</Tip>
+
+For example:
+```bash
+# Show error before asking AI
+git push  # Fails with error
+# Now ask AI: "How do I fix this?"
+```
+
+### Query Specificity
+
+Be specific in your queries:
+
+**Good:**
+- "Find all Python files modified today"
+- "Explain this SSH error"
+- "Create a git alias for interactive rebase"
+
+**Less Effective:**
+- "Help"
+- "What's wrong?"
+- "Fix it"
+
+### Command Review
+
+<Warning>
+Always review AI-generated commands before running them. AI can make mistakes, especially with destructive operations.
+</Warning>
+
+The command is inserted into your input buffer (not executed), giving you a chance to review and edit.
+
+## Model Selection
+
+### Choosing a Model
+
+Consider these factors:
+
+**Speed:**
+- `gpt-5-mini` - Fast, inexpensive
+- `gemini-2.5-flash` - Very fast, free tier available
+
+**Quality:**
+- `gpt-4` - More accurate, better reasoning
+- `gemini-2.0-pro` - Advanced capabilities
+
+**Cost:**
+- Mini/Flash models: Lower cost per token
+- Pro models: Higher cost, better results
+
+### Custom Models
+
+Override the default model in configuration:
+
+```json
+{
+  "openai_model": "gpt-4-turbo"
+}
+```
+
+Or use any compatible model from your provider.
+
+## Troubleshooting
+
+### API Key Not Configured
+
+**Error:** `"OpenAI API key not configured. Set it in Settings > Advanced > AI."`
+
+**Solution:**
+1. Open Settings
+2. Navigate to Advanced > AI
+3. Enter your API key
+4. Save configuration
+
+### Network Errors
+
+**Error:** `"AI error: HTTP request failed"`
+
+**Causes:**
+- No internet connection
+- Firewall blocking API access
+- API endpoint unavailable
+
+**Solution:**
+- Check network connectivity
+- Verify firewall rules
+- Try again later if API is down
+
+### Invalid Response
+
+**Error:** `"AI error: No response content"`
+
+**Causes:**
+- Model returned empty response
+- Response parsing failed
+- Rate limiting
+
+**Solution:**
+- Try a different query
+- Check API quota/billing
+- Switch to a different model
+
+### Rate Limiting
+
+If you hit rate limits:
+- Wait before retrying
+- Upgrade your API plan
+- Switch to a different provider
+
+## Privacy & Security
+
+### Data Sent to AI
+
+When you use AI input, the following is sent to your chosen provider:
+
+1. **Your query** - The text you typed
+2. **Terminal context** - Last 50 lines of terminal output
+3. **System prompt** - Instructions for the AI
+
+<Warning>
+Be mindful of sensitive information in your terminal output (passwords, API keys, private data). This content is sent to third-party AI providers.
+</Warning>
+
+### Data Storage
+
+Termy does not:
+- Store AI queries or responses
+- Log terminal content sent to AI
+- Share data beyond your chosen provider
+
+All AI interactions are ephemeral and session-only.
+
+## Related
+
+- [Configuration](/configuration/overview) - Configure AI provider settings
+- [Keyboard Shortcuts](/configuration/keybindings) - AI input keybindings

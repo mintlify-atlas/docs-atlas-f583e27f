@@ -1,0 +1,149 @@
+---
+title: Configuration Overview
+description: How to configure Termy using the config file
+---
+
+Termy is configured through a text-based configuration file located at `~/.config/termy/config.txt`.
+
+## Config File Location
+
+The configuration file is stored at:
+
+```
+~/.config/termy/config.txt
+```
+
+This location is consistent across macOS, Linux, and Windows.
+
+## Opening the Config File
+
+You can open the configuration file in several ways:
+
+1. **Command Palette**: Press `Cmd+P` (macOS) or `Ctrl+P` (Linux/Windows) and search for "Open Settings File"
+2. **Menu Bar**: Go to `Termy > Open Config File...` (macOS) or `File > Open Config File...` (other platforms)
+3. **Settings UI**: Open Settings (`Cmd+,` or `Ctrl+,`) and click "Open Config File"
+4. **Terminal**: Run `termy --config` if you have the CLI installed
+
+## Config File Format
+
+Termy uses a simple key-value format inspired by Ghostty:
+
+```txt
+# Comments start with #
+key = value
+
+# Boolean values
+tmux_enabled = true
+cursor_blink = false
+
+# Numeric values
+font_size = 14
+background_opacity = 0.95
+
+# String values
+theme = termy
+font_family = JetBrains Mono
+
+# Unset values use the default
+# working_dir = none
+
+# Color overrides in a separate section
+[colors]
+foreground = #e7ebf5
+background = #0b1020
+```
+
+### Format Rules
+
+- One setting per line
+- Lines beginning with `#` are comments
+- Format: `key = value`
+- Whitespace around `=` is optional
+- Invalid lines are ignored with warnings
+- Settings can appear in any order
+- Use `none` or comment out a line to use the default value
+
+## Configuration Sections
+
+Termy configuration is organized into logical groups:
+
+- **[Appearance](/configuration/appearance)**: Theme, fonts, window transparency, and padding
+- **[Terminal](/configuration/terminal)**: Tmux integration, shell settings, cursor, and scrolling
+- **[Tabs](/configuration/tabs)**: Tab title behavior, tab strip appearance
+- **[Keybindings](/configuration/keybindings)**: Custom keyboard shortcuts
+- **[Colors](/configuration/colors)**: Color scheme overrides
+
+## Validation
+
+Termy validates your configuration on startup:
+
+- Invalid keys generate warnings in the app logs
+- Invalid values fall back to defaults with warnings
+- Missing required values use sensible defaults
+- The app continues to function even with invalid config
+
+## Editing Tips
+
+<Tip>
+Termy automatically reloads configuration when the file changes. Edit your config file and see changes immediately!
+</Tip>
+
+<Warning>
+Some settings (like window dimensions) only apply to new windows, not existing ones.
+</Warning>
+
+## Example Configuration
+
+Here's a complete example configuration:
+
+```txt
+# Appearance
+theme = tokyo-night
+font_family = Cascadia Code
+font_size = 16
+background_opacity = 0.95
+background_blur = true
+padding_x = 16
+padding_y = 12
+
+# Terminal
+tmux_enabled = true
+shell = /opt/homebrew/bin/fish
+cursor_style = beam
+cursor_blink = false
+scrollback_history = 10000
+
+# Tabs
+tab_title_mode = smart
+tab_title_fallback = Terminal
+tab_close_visibility = always
+
+# Keybindings
+keybind = cmd-t=new_tab
+keybind = cmd-w=close_pane_or_tab
+keybind = cmd-d=split_pane_vertical
+
+# Color overrides
+[colors]
+foreground = #c0caf5
+background = #1a1b26
+```
+
+## Next Steps
+
+Explore the configuration sections:
+
+<CardGroup cols={2}>
+  <Card title="Appearance" icon="palette" href="/configuration/appearance">
+    Theme, fonts, and visual settings
+  </Card>
+  <Card title="Terminal" icon="terminal" href="/configuration/terminal">
+    Tmux, shell, cursor, and scrolling
+  </Card>
+  <Card title="Tabs" icon="window" href="/configuration/tabs">
+    Tab title and tab strip behavior
+  </Card>
+  <Card title="Keybindings" icon="keyboard" href="/configuration/keybindings">
+    Custom keyboard shortcuts
+  </Card>
+</CardGroup>

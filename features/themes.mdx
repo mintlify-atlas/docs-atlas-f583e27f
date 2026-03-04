@@ -1,0 +1,313 @@
+---
+title: Themes
+description: Customizable color schemes with built-in themes and JSON-based theme format
+---
+
+Termy supports extensive theming capabilities, allowing you to customize the terminal's color scheme to match your preferences or environment.
+
+## Overview
+
+Termy includes 13 built-in themes and supports custom themes via JSON files. Themes control:
+
+- Foreground and background colors
+- Cursor color
+- 16 ANSI colors (black, red, green, yellow, blue, magenta, cyan, white)
+- Bright variants of all 8 base colors
+
+## Built-in Themes
+
+Termy ships with these professionally designed themes:
+
+1. **Termy** - Default Termy theme
+2. **Tokyo Night** - Popular dark theme with vibrant colors
+3. **Catppuccin Mocha** - Warm, pastel dark theme
+4. **Dracula** - Classic dark theme with purple accents
+5. **Gruvbox Dark** - Retro-inspired warm dark theme
+6. **Nord** - Arctic, north-bluish color palette
+7. **Solarized Dark** - Precision colors for optimal readability
+8. **One Dark** - Atom's iconic dark theme
+9. **Monokai** - Sublime Text's classic theme
+10. **Material Dark** - Google's Material Design dark theme
+11. **Palenight** - Material theme variant with darker background
+12. **Tomorrow Night** - Clean, classic dark theme
+13. **Oceanic Next** - Cool, ocean-inspired color palette
+
+All themes are implemented in `crates/themes/src/`.
+
+## Switching Themes
+
+Use the theme switcher to change themes:
+
+**Via Command Palette:**
+1. Open command palette
+2. Type "Switch Theme"
+3. Select from available themes
+
+**Via Menu:**
+View > Switch Theme
+
+<Tip>
+Theme changes apply instantly without restarting Termy.
+</Tip>
+
+## Theme Format
+
+Termy uses a JSON-based theme format validated by `theme.schema.json`.
+
+### Schema
+
+```json
+{
+  "$schema": "../theme.schema.json",
+  "foreground": "#a9b1d6",
+  "background": "#1a1b26",
+  "cursor": "#c0caf5",
+  "black": "#15161e",
+  "red": "#f7768e",
+  "green": "#9ece6a",
+  "yellow": "#e0af68",
+  "blue": "#7aa2f7",
+  "magenta": "#bb9af7",
+  "cyan": "#7dcfff",
+  "white": "#a9b1d6",
+  "bright_black": "#414868",
+  "bright_red": "#f7768e",
+  "bright_green": "#9ece6a",
+  "bright_yellow": "#e0af68",
+  "bright_blue": "#7aa2f7",
+  "bright_magenta": "#bb9af7",
+  "bright_cyan": "#7dcfff",
+  "bright_white": "#c0caf5"
+}
+```
+
+### Color Properties
+
+| Property | Description | ANSI Code |
+|----------|-------------|----------|
+| `foreground` | Default text color | - |
+| `background` | Terminal background | - |
+| `cursor` | Cursor color | - |
+| `black` | ANSI black | 30 |
+| `red` | ANSI red | 31 |
+| `green` | ANSI green | 32 |
+| `yellow` | ANSI yellow | 33 |
+| `blue` | ANSI blue | 34 |
+| `magenta` | ANSI magenta | 35 |
+| `cyan` | ANSI cyan | 36 |
+| `white` | ANSI white | 37 |
+| `bright_black` | ANSI bright black (gray) | 90 |
+| `bright_red` | ANSI bright red | 91 |
+| `bright_green` | ANSI bright green | 92 |
+| `bright_yellow` | ANSI bright yellow | 93 |
+| `bright_blue` | ANSI bright blue | 94 |
+| `bright_magenta` | ANSI bright magenta | 95 |
+| `bright_cyan` | ANSI bright cyan | 96 |
+| `bright_white` | ANSI bright white | 97 |
+
+### Color Format
+
+All colors must be 6-digit RGB hex values:
+
+```json
+"foreground": "#a9b1d6"  // ✓ Valid
+"foreground": "#abc"     // ✗ Invalid (3-digit)
+"foreground": "#aabbccdd" // ✗ Invalid (RGBA)
+```
+
+The schema enforces this pattern:
+
+```json
+"pattern": "^#[0-9a-fA-F]{6}$"
+```
+
+## Creating Custom Themes
+
+### 1. Create Theme File
+
+Create a JSON file with your custom colors:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/user/termy/main/theme.schema.json",
+  "foreground": "#d4d4d4",
+  "background": "#1e1e1e",
+  "cursor": "#aeafad",
+  "black": "#000000",
+  "red": "#cd3131",
+  "green": "#0dbc79",
+  "yellow": "#e5e510",
+  "blue": "#2472c8",
+  "magenta": "#bc3fbc",
+  "cyan": "#11a8cd",
+  "white": "#e5e5e5",
+  "bright_black": "#666666",
+  "bright_red": "#f14c4c",
+  "bright_green": "#23d18b",
+  "bright_yellow": "#f5f543",
+  "bright_blue": "#3b8eea",
+  "bright_magenta": "#d670d6",
+  "bright_cyan": "#29b8db",
+  "bright_white": "#e5e5e5"
+}
+```
+
+### 2. Import Theme
+
+Use the Import Colors command:
+
+**Via Command Palette:**
+1. Open command palette
+2. Type "Import Colors"
+3. Select your JSON theme file
+
+**Via Menu:**
+View > Import Colors
+
+<Note>
+Imported themes are stored in your configuration and persist across sessions.
+</Note>
+
+## Theme Architecture
+
+Termy's theme system is implemented across several crates:
+
+### Theme Core
+
+Location: `crates/theme_core/`
+
+Defines the core `ThemeColors` struct and theme ID handling:
+
+```rust
+pub struct ThemeColors {
+    pub foreground: Rgb8,
+    pub background: Rgb8,
+    pub cursor: Rgb8,
+    // ... 16 ANSI colors
+}
+```
+
+### Theme Registry
+
+Location: `crates/themes/src/lib.rs`
+
+Provides theme resolution and registration:
+
+```rust
+pub trait ThemeProvider: Send + Sync {
+    fn theme(&self, theme_id: &str) -> Option<ThemeColors>;
+    fn theme_ids(&self) -> &'static [&'static str];
+}
+
+pub struct ThemeRegistry {
+    providers: Vec<Box<dyn ThemeProvider>>,
+}
+```
+
+### Global Registry
+
+Themes are resolved through a global registry:
+
+```rust
+pub fn resolve_theme(theme_id: &str) -> Option<ThemeColors>
+pub fn available_theme_ids() -> Vec<&'static str>
+pub fn register_theme_provider<P>(provider: P)
+```
+
+## Example: Tokyo Night Theme
+
+From `themes/tokyo-night-dark.json`:
+
+```json
+{
+  "$schema": "../theme.schema.json",
+  "foreground": "#a9b1d6",
+  "background": "#1a1b26",
+  "cursor": "#c0caf5",
+  "black": "#15161e",
+  "red": "#f7768e",
+  "green": "#9ece6a",
+  "yellow": "#e0af68",
+  "blue": "#7aa2f7",
+  "magenta": "#bb9af7",
+  "cyan": "#7dcfff",
+  "white": "#a9b1d6",
+  "bright_black": "#414868",
+  "bright_red": "#f7768e",
+  "bright_green": "#9ece6a",
+  "bright_yellow": "#e0af68",
+  "bright_blue": "#7aa2f7",
+  "bright_magenta": "#bb9af7",
+  "bright_cyan": "#7dcfff",
+  "bright_white": "#c0caf5"
+}
+```
+
+## Theme Normalization
+
+Theme IDs are normalized for matching:
+
+```rust
+// From termy_theme_core
+pub fn normalize_theme_id(id: &str) -> String
+pub fn canonical_builtin_theme_id(id: &str) -> Option<&'static str>
+```
+
+This allows flexible theme references:
+- `"tokyo-night"` → `"tokyo-night"`
+- `"Tokyo Night"` → `"tokyo-night"`
+- `"TOKYO_NIGHT"` → `"tokyo-night"`
+
+## Best Practices
+
+### Color Contrast
+
+Ensure sufficient contrast between:
+- Foreground and background (minimum 4.5:1 ratio)
+- ANSI colors and background
+- Cursor and background
+
+### Testing
+
+Test your theme with:
+
+```bash
+# ANSI color test
+for i in {0..7}; do echo -e "\e[3${i}m Color $i \e[0m"; done
+for i in {0..7}; do echo -e "\e[9${i}m Bright $i \e[0m"; done
+
+# Background colors
+for i in {0..7}; do echo -e "\e[4${i}m BG $i \e[0m"; done
+```
+
+### Accessibility
+
+Consider accessibility when creating themes:
+- Avoid red-green color combinations for critical information
+- Provide sufficient brightness variation
+- Test with colorblindness simulators
+
+## Troubleshooting
+
+### Theme Not Loading
+
+If a custom theme doesn't load:
+
+1. **Validate JSON**: Ensure your JSON is well-formed
+2. **Check Schema**: All required fields must be present
+3. **Color Format**: Use 6-digit hex format (`#RRGGBB`)
+4. **File Location**: Verify the theme file is accessible
+
+### Colors Appear Wrong
+
+If colors don't match expectations:
+
+1. **Check TERM**: Ensure `TERM` supports 256 colors
+2. **Test ANSI**: Run ANSI color tests to verify rendering
+3. **GPU Drivers**: Update graphics drivers
+4. **Theme Reload**: Switch themes to force a reload
+
+## Related
+
+- [Configuration](/configuration/overview) - Configure default theme
+- [GPU Acceleration](/features/gpu-acceleration) - Theme rendering performance

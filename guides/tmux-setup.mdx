@@ -1,0 +1,287 @@
+---
+title: "Tmux Integration Setup"
+description: "Learn how to enable tmux, manage sessions, split panes, and use keyboard shortcuts for powerful terminal multiplexing in Termy"
+---
+
+Termy's tmux integration provides powerful terminal multiplexing capabilities with a native UI. This guide will walk you through enabling tmux, managing sessions, and working with panes.
+
+## What is Tmux Integration?
+
+Tmux integration allows you to:
+- Manage multiple terminal sessions that persist across app restarts
+- Split your terminal into multiple panes for side-by-side workflows
+- Switch between sessions seamlessly
+- Keep your work running even when Termy is closed
+
+Termy integrates with tmux through control mode, giving you the power of tmux with Termy's modern UI.
+
+## Prerequisites
+
+Before enabling tmux integration, ensure you have tmux installed:
+
+```bash
+# macOS (Homebrew)
+brew install tmux
+
+# Ubuntu/Debian
+sudo apt-get install tmux
+
+# Fedora/RHEL
+sudo dnf install tmux
+```
+
+Termy requires **tmux 3.3 or later**.
+
+## Enabling Tmux
+
+<Steps>
+  <Step title="Open Configuration">
+    Open your Termy configuration file at `~/.config/termy/config.txt`
+  </Step>
+  
+  <Step title="Enable Tmux Integration">
+    Set `tmux_enabled` to `true`:
+    
+    ```txt
+    tmux_enabled = true
+    ```
+  </Step>
+  
+  <Step title="Configure Optional Settings">
+    Customize additional tmux settings:
+    
+    ```txt
+    # Reuse tmux tabs and panes across app restarts
+    tmux_persistence = true
+    
+    # Custom tmux binary path (if not in PATH)
+    tmux_binary = tmux
+    
+    # Show active pane border highlight
+    tmux_show_active_pane_border = false
+    ```
+  </Step>
+  
+  <Step title="Restart Termy">
+    Restart Termy to apply the changes. Termy will now launch in tmux mode.
+  </Step>
+</Steps>
+
+<Note>
+  When `tmux_persistence` is enabled, your tabs and panes will persist across app restarts. Termy creates a dedicated tmux socket named `termy` to manage sessions.
+</Note>
+
+## Session Management
+
+### Creating and Switching Sessions
+
+Access tmux session management through the command palette or File menu:
+
+<Steps>
+  <Step title="Open Session Manager">
+    Press `Cmd+P` (macOS) or `Ctrl+P` (Linux/Windows) to open the command palette, then search for "tmux Sessions"
+  </Step>
+  
+  <Step title="Session Operations">
+    From the session manager, you can:
+    - **Attach** to existing sessions
+    - **Create** new sessions
+    - **Switch** between active sessions
+    - **Rename** sessions
+    - **Delete** sessions
+  </Step>
+</Steps>
+
+### Session Naming
+
+When creating a new session, provide a meaningful name:
+
+```txt
+work
+project-api
+devops-tasks
+```
+
+Session names help you quickly identify and switch between different contexts.
+
+<Warning>
+  Deleting a session will terminate all processes running in that session's panes. Make sure to save your work before deleting.
+</Warning>
+
+## Pane Operations
+
+### Splitting Panes
+
+Termy provides intuitive pane splitting:
+
+**Vertical Split** (side-by-side):
+- Command Palette: Search for "Split Pane Vertical"
+- The keybinding is configurable via `config.txt`
+
+**Horizontal Split** (top-bottom):
+- Command Palette: Search for "Split Pane Horizontal"
+- The keybinding is configurable via `config.txt`
+
+<Steps>
+  <Step title="Split Your First Pane">
+    Open the command palette and select "Split Pane Vertical" to create a side-by-side layout
+  </Step>
+  
+  <Step title="Navigate Between Panes">
+    Click on any pane to focus it, or use keyboard shortcuts to switch focus
+  </Step>
+  
+  <Step title="Resize Panes">
+    Drag the divider between panes to adjust their size
+  </Step>
+</Steps>
+
+### Closing Panes
+
+To close a pane:
+1. Focus the pane you want to close
+2. Type `exit` or press `Ctrl+D` to terminate the shell
+3. The pane will automatically close
+
+Alternatively, use the command palette and search for "Close Pane".
+
+### Pane Focus Highlighting
+
+When working with multiple panes, Termy visually highlights the active pane:
+
+```txt
+# Adjust the dimming effect for inactive panes
+pane_focus_effect = soft_spotlight
+pane_focus_strength = 0.6
+
+# Show a border around the active pane (tmux mode)
+tmux_show_active_pane_border = false
+```
+
+## Keyboard Shortcuts
+
+Customize tmux-related keybindings in your `config.txt`:
+
+```txt
+# Example keybindings (customize to your preference)
+keybind = cmd-d=split_pane_vertical
+keybind = cmd-shift-d=split_pane_horizontal
+keybind = cmd-w=close_pane
+```
+
+<Note>
+  Tmux-only keybind actions require an active tmux session to function.
+</Note>
+
+## Persistence and Recovery
+
+With `tmux_persistence = true`, Termy preserves your workspace:
+
+**What Persists:**
+- Tab layout and arrangement
+- Pane splits and sizes
+- Working directories
+- Session names
+
+**What Doesn't Persist:**
+- Running processes (they terminate when Termy closes)
+- Scrollback buffer contents
+- Command history within the session
+
+<Steps>
+  <Step title="Close Termy">
+    Quit Termy normally
+  </Step>
+  
+  <Step title="Reopen Termy">
+    Launch Termy again
+  </Step>
+  
+  <Step title="Resume Work">
+    Your tabs, panes, and layout will be restored automatically
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Tmux Version Error
+
+```
+tmux 3.3+ required, found 3.2
+```
+
+**Solution:** Update tmux to version 3.3 or later:
+
+```bash
+# macOS
+brew upgrade tmux
+
+# Ubuntu (may need to add PPA for newer version)
+sudo add-apt-repository ppa:tmux/tmux
+sudo apt-get update
+sudo apt-get install tmux
+```
+
+### Custom Tmux Binary Path
+
+If tmux is not in your PATH:
+
+```txt
+tmux_binary = /opt/homebrew/bin/tmux
+```
+
+### Session Won't Attach
+
+If Termy can't attach to a session:
+
+1. Check if tmux is running:
+   ```bash
+   tmux -L termy list-sessions
+   ```
+
+2. Kill stale sessions:
+   ```bash
+   tmux -L termy kill-session -t session_name
+   ```
+
+3. Restart Termy with a fresh tmux socket
+
+<Warning>
+  Termy uses a dedicated socket named `termy` (via `tmux -L termy`). Don't manually attach to these sessions from the command line, as it may interfere with Termy's control mode.
+</Warning>
+
+### Control Mode Issues
+
+If you see control mode errors:
+
+1. Ensure no other application is using the `termy` tmux socket
+2. Check tmux version compatibility
+3. Verify tmux binary path in configuration
+
+## Advanced Configuration
+
+### Custom Socket Name
+
+Termy uses the socket name `termy` by default. This keeps Termy sessions separate from your manual tmux sessions.
+
+### Window Options
+
+For managed sessions, Termy overrides certain tmux window options to ensure proper integration. These are configured automatically.
+
+### Shell Integration
+
+When tmux mode is enabled, Termy disables shell integration environment variables for tmux child processes:
+
+```bash
+# These are NOT exported in tmux sessions
+TERMY_SHELL_INTEGRATION=0
+TERMY_TAB_TITLE_PREFIX is removed
+```
+
+This prevents conflicts between tmux control mode and shell-level integration.
+
+## Next Steps
+
+- Explore [Custom Themes](/guides/custom-themes) to personalize your tmux workspace
+- Configure [Shell Integration](/guides/shell-integration) for enhanced tab titles
+- Learn about [Font Configuration](/guides/font-configuration) for optimal readability

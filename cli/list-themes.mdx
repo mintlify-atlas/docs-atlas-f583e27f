@@ -1,0 +1,255 @@
+---
+title: 'List Themes'
+description: 'Browse all built-in color themes available in Termy'
+---
+
+The `-list-themes` command displays all built-in color themes that come pre-installed with Termy.
+
+## Usage
+
+```bash
+termy-cli -list-themes
+```
+
+## What It Does
+
+This command queries Termy's theme registry and outputs a list of all available theme identifiers that you can use in your configuration.
+
+## Example Output
+
+```
+ayu-dark
+ayu-light
+ayu-mirage
+catppuccin-frappe
+catppuccin-latte
+catppuccin-macchiato
+catppuccin-mocha
+dracula
+gruvbox-dark
+gruvbox-light
+nord
+one-dark
+one-light
+solarized-dark
+solarized-light
+termy
+tokyo-night
+tokyo-night-storm
+```
+
+<Note>
+Theme names are lowercase and use hyphens as separators. These exact identifiers must be used in your configuration file.
+</Note>
+
+## Built-in Themes
+
+Termy includes carefully curated themes optimized for terminal use:
+
+### Popular Themes
+
+| Theme | Description | Variant |
+|-------|-------------|----------|
+| **termy** | Termy's custom theme | Dark |
+| **dracula** | Popular purple-based theme | Dark |
+| **nord** | Arctic, north-bluish theme | Dark |
+| **one-dark** | Atom's iconic theme | Dark |
+| **one-light** | Atom's light variant | Light |
+| **tokyo-night** | Clean, modern theme | Dark |
+| **tokyo-night-storm** | Storm variant | Dark |
+| **catppuccin-mocha** | Soothing pastel theme | Dark |
+| **catppuccin-macchiato** | Mid-tone variant | Dark |
+| **catppuccin-frappe** | Frappe variant | Dark |
+| **catppuccin-latte** | Light variant | Light |
+| **gruvbox-dark** | Retro groove colors | Dark |
+| **gruvbox-light** | Retro groove light | Light |
+| **solarized-dark** | Precision colors | Dark |
+| **solarized-light** | Precision light | Light |
+| **ayu-dark** | Modern syntax theme | Dark |
+| **ayu-mirage** | Mirage variant | Dark |
+| **ayu-light** | Light variant | Light |
+
+## Viewing Theme Colors
+
+After finding a theme, inspect its color palette:
+
+<CodeGroup>
+```bash Current Theme
+# View colors for your active theme
+termy-cli -list-colors
+```
+
+```bash Specific Theme
+# Set theme in config, then view colors
+termy-cli -edit-config
+# Change theme = "nord"
+termy-cli -list-colors
+```
+</CodeGroup>
+
+See [List Colors](/cli/list-keybinds#list-colors) for more details.
+
+## Configuring Themes
+
+Set your preferred theme in the configuration file:
+
+<Steps>
+  <Step title="Open configuration">
+    ```bash
+    termy-cli -edit-config
+    ```
+  </Step>
+  
+  <Step title="Set theme">
+    ```toml
+    theme = "nord"
+    ```
+  </Step>
+  
+  <Step title="Validate configuration">
+    ```bash
+    termy-cli -validate-config
+    ```
+  </Step>
+  
+  <Step title="Restart Termy">
+    Theme changes require restarting Termy to take effect.
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Finding a Theme
+
+Search for specific themes:
+
+<CodeGroup>
+```bash Search by Name
+termy-cli -list-themes | grep -i "catppuccin"
+```
+
+```bash Output
+catppuccin-frappe
+catppuccin-latte
+catppuccin-macchiato
+catppuccin-mocha
+```
+</CodeGroup>
+
+### Counting Themes
+
+See how many themes are available:
+
+```bash
+termy-cli -list-themes | wc -l
+```
+
+### Exporting Theme List
+
+Save themes to a file:
+
+```bash
+termy-cli -list-themes > available-themes.txt
+```
+
+### Scripting Theme Selection
+
+Randomly select a theme:
+
+<CodeGroup>
+```bash Random Theme (bash)
+#!/bin/bash
+theme=$(termy-cli -list-themes | shuf -n 1)
+echo "Selected theme: $theme"
+# Update config programmatically
+```
+</CodeGroup>
+
+## Theme Selection Tips
+
+<AccordionGroup>
+  <Accordion title="Choose by lighting condition">
+    - **Bright environments**: Light themes (one-light, solarized-light, gruvbox-light)
+    - **Dim environments**: Dark themes (nord, dracula, tokyo-night)
+    - **Variable lighting**: Themes with both variants (ayu, gruvbox, catppuccin)
+  </Accordion>
+  
+  <Accordion title="Choose by color preference">
+    - **Blue tones**: nord, tokyo-night
+    - **Purple tones**: dracula, catppuccin
+    - **Warm tones**: gruvbox, ayu
+    - **Neutral**: one-dark, termy
+  </Accordion>
+  
+  <Accordion title="Choose by contrast">
+    - **High contrast**: dracula, one-dark
+    - **Medium contrast**: nord, tokyo-night
+    - **Low contrast**: gruvbox, solarized
+  </Accordion>
+</AccordionGroup>
+
+## Custom Themes
+
+While `-list-themes` only shows built-in themes, you can create custom themes by defining colors in your configuration:
+
+```toml
+theme = "my-custom-theme"
+
+[colors]
+foreground = "#e0e0e0"
+background = "#1a1a1a"
+cursor = "#00ff00"
+
+# ANSI colors
+black = "#1a1a1a"
+red = "#ff5555"
+green = "#50fa7b"
+yellow = "#f1fa8c"
+blue = "#bd93f9"
+magenta = "#ff79c6"
+cyan = "#8be9fd"
+white = "#f8f8f2"
+# ... bright variants
+```
+
+<Tip>
+Custom themes won't appear in `-list-themes` output since they're user-defined, not built-in.
+</Tip>
+
+## Validation
+
+Always validate your configuration after changing themes:
+
+```bash
+termy-cli -validate-config
+```
+
+This ensures:
+- Theme name is recognized (if using built-in)
+- Custom color values are valid hex codes
+- No syntax errors in the config file
+
+## Theme Files
+
+Built-in themes are compiled into Termy and sourced from the `termy_themes` crate. You cannot modify built-in themes, but you can:
+
+1. Use them as-is by name
+2. Create custom themes with your own colors
+3. Override specific colors while using a base theme
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="List Colors" icon="palette" href="/cli/list-keybinds#list-colors">
+    View color palette for active theme
+  </Card>
+  <Card title="Show Config" icon="file-code" href="/cli/config-management#show-config">
+    See your current theme setting
+  </Card>
+  <Card title="Interactive TUI" icon="terminal" href="/cli/tui">
+    Browse themes visually
+  </Card>
+  <Card title="Theme Configuration" icon="gear" href="/configuration/colors">
+    Complete theme configuration guide
+  </Card>
+</CardGroup>

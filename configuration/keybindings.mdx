@@ -1,0 +1,339 @@
+---
+title: Keybindings
+description: Customize keyboard shortcuts with Ghostty-style keybind overrides
+---
+
+Termy uses Ghostty-style keybinding configuration via repeated `keybind` directives in your config file.
+
+## Quick Start
+
+Add keybinding overrides to `~/.config/termy/config.txt`:
+
+```txt
+# Override a default binding
+keybind = cmd-p=toggle_command_palette
+
+# Remove a binding
+keybind = cmd-w=unbind
+
+# Add a new binding
+keybind = cmd-d=split_pane_vertical
+```
+
+## Keybind Syntax
+
+Supported forms:
+
+<ParamField path="keybind" type="string" default="built-in platform defaults">
+  Keybinding override directive. Multiple `keybind` lines can be specified.
+  
+  **Forms:**
+  - `keybind = clear` - Remove all default keybindings
+  - `keybind = <trigger>=<action>` - Bind trigger to action
+  - `keybind = <trigger>=unbind` - Remove binding for trigger
+</ParamField>
+
+### Trigger Format
+
+Triggers use modifier keys and a base key:
+
+```txt
+# Format: modifier-key
+cmd-p
+ctrl-shift-c
+alt-enter
+secondary-t
+```
+
+**Modifiers:**
+- `cmd` - Command key (macOS only)
+- `ctrl` - Control key
+- `alt` - Alt/Option key
+- `shift` - Shift key
+- `secondary` - Smart modifier (cmd on macOS, ctrl elsewhere)
+
+**Keys:**
+- Letters: `a-z`
+- Numbers: `0-9`
+- Special: `enter`, `space`, `tab`, `backspace`, `delete`, `escape`
+- Arrows: `left`, `right`, `up`, `down`
+- Function: `f1-f12`
+- Symbols: `-`, `=`, `,`, `.`, etc.
+
+<Tip>
+Use `secondary` modifier for cross-platform configs. It maps to `cmd` on macOS and `ctrl` on other platforms.
+</Tip>
+
+## Behavior
+
+- Directives are applied in file order
+- Later lines win for the same trigger
+- `clear` removes all defaults before subsequent lines are applied
+- `unbind` removes the current mapping for a trigger
+- Invalid lines are ignored with warnings
+
+## Available Actions
+
+### Tab Management
+
+- `new_tab` - Create a new tab
+- `close_tab` - Close the current tab
+- `close_pane_or_tab` - Close current pane or tab if no panes
+- `move_tab_left` - Move tab to the left
+- `move_tab_right` - Move tab to the right
+- `switch_tab_left` - Switch to tab on the left
+- `switch_tab_right` - Switch to tab on the right
+- `rename_tab` - Rename the current tab
+
+### Pane Management
+
+<Note>Most pane actions are not available on Windows. Pane resize and zoom actions require an active tmux session.</Note>
+
+- `split_pane_vertical` - Split pane vertically
+- `split_pane_horizontal` - Split pane horizontally
+- `close_pane` - Close the current pane
+- `focus_pane_left` - Focus pane to the left
+- `focus_pane_right` - Focus pane to the right
+- `focus_pane_up` - Focus pane above
+- `focus_pane_down` - Focus pane below
+- `focus_pane_next` - Focus next pane
+- `focus_pane_previous` - Focus previous pane
+- `resize_pane_left` - Resize pane left (tmux required)
+- `resize_pane_right` - Resize pane right (tmux required)
+- `resize_pane_up` - Resize pane up (tmux required)
+- `resize_pane_down` - Resize pane down (tmux required)
+- `toggle_pane_zoom` - Toggle pane zoom (tmux required)
+
+### Tmux Sessions
+
+- `manage_tmux_sessions` - Open tmux session manager
+
+### Window Management
+
+- `minimize_window` - Minimize the window
+- `quit` - Quit Termy
+
+### View & Appearance
+
+- `zoom_in` - Increase font size
+- `zoom_out` - Decrease font size
+- `zoom_reset` - Reset font size to default
+- `switch_theme` - Open theme switcher
+- `import_colors` - Import color scheme from JSON
+
+### Search
+
+- `open_search` - Open find dialog
+- `close_search` - Close find dialog
+- `search_next` - Find next match
+- `search_previous` - Find previous match
+- `toggle_search_case_sensitive` - Toggle case sensitivity
+- `toggle_search_regex` - Toggle regex mode
+
+### Settings
+
+- `open_settings` - Open Settings UI
+- `open_config` - Open config file in editor
+- `toggle_command_palette` - Open/close command palette
+
+### Edit
+
+- `copy` - Copy selection to clipboard
+- `paste` - Paste from clipboard
+
+### AI
+
+- `toggle_ai_input` - Toggle AI input panel
+
+### Misc
+
+- `app_info` - Show app information
+- `restart_app` - Restart the application
+- `check_for_updates` - Check for updates (macOS only)
+- `install_cli` - Install CLI symlink
+
+## Default Keybindings
+
+### macOS Defaults
+
+```txt
+cmd-q → quit
+cmd-, → open_settings
+cmd-p → toggle_command_palette
+cmd-t → new_tab
+cmd-w → close_pane_or_tab
+cmd-d → split_pane_vertical
+cmd-shift-d → split_pane_horizontal
+cmd-o → focus_pane_next
+cmd-alt-left → focus_pane_left
+cmd-alt-right → focus_pane_right
+cmd-alt-up → focus_pane_up
+cmd-alt-down → focus_pane_down
+cmd-alt-shift-left → resize_pane_left
+cmd-alt-shift-right → resize_pane_right
+cmd-alt-shift-up → resize_pane_up
+cmd-alt-shift-down → resize_pane_down
+cmd-enter → toggle_pane_zoom
+cmd-= → zoom_in
+cmd-+ → zoom_in
+cmd-- → zoom_out
+cmd-0 → zoom_reset
+cmd-f → open_search
+cmd-g → search_next
+cmd-shift-g → search_previous
+cmd-k → toggle_ai_input
+cmd-m → minimize_window
+cmd-c → copy
+cmd-v → paste
+```
+
+### Linux/Windows Defaults
+
+```txt
+ctrl-q → quit
+ctrl-, → open_settings
+ctrl-p → toggle_command_palette
+ctrl-t → new_tab
+ctrl-w → close_pane_or_tab
+ctrl-d → split_pane_vertical
+ctrl-shift-d → split_pane_horizontal
+ctrl-o → focus_pane_next
+ctrl-alt-left → focus_pane_left
+ctrl-alt-right → focus_pane_right
+ctrl-alt-up → focus_pane_up
+ctrl-alt-down → focus_pane_down
+ctrl-alt-shift-left → resize_pane_left
+ctrl-alt-shift-right → resize_pane_right
+ctrl-alt-shift-up → resize_pane_up
+ctrl-alt-shift-down → resize_pane_down
+ctrl-enter → toggle_pane_zoom
+ctrl-= → zoom_in
+ctrl-+ → zoom_in
+ctrl-- → zoom_out
+ctrl-0 → zoom_reset
+ctrl-f → open_search
+ctrl-g → search_next
+ctrl-shift-g → search_previous
+ctrl-k → toggle_ai_input
+ctrl-shift-c → copy
+ctrl-shift-v → paste
+```
+
+<Note>
+`secondary` maps to `cmd` on macOS and `ctrl` on other platforms.
+</Note>
+
+## Customization Examples
+
+### Override One Default
+
+Change a single keybinding while keeping all other defaults:
+
+```txt
+keybind = cmd-p=toggle_command_palette
+```
+
+### Remove One Default
+
+Unbind a key without assigning it to another action:
+
+```txt
+keybind = cmd-w=unbind
+```
+
+### Start From Scratch
+
+Clear all defaults and define your own minimal set:
+
+```txt
+keybind = clear
+keybind = cmd-p=toggle_command_palette
+keybind = cmd-t=new_tab
+keybind = cmd-w=close_pane_or_tab
+keybind = cmd-c=copy
+keybind = cmd-v=paste
+```
+
+### Cross-Platform Config
+
+Use `secondary` for bindings that work on all platforms:
+
+```txt
+keybind = secondary-p=toggle_command_palette
+keybind = secondary-t=new_tab
+keybind = secondary-w=close_pane_or_tab
+keybind = secondary-d=split_pane_vertical
+keybind = secondary-shift-d=split_pane_horizontal
+```
+
+### Custom Workflow
+
+Example custom configuration for tmux power users:
+
+```txt
+# Clear defaults and start fresh
+keybind = clear
+
+# Basic commands
+keybind = secondary-p=toggle_command_palette
+keybind = secondary-,=open_settings
+keybind = secondary-q=quit
+
+# Tabs
+keybind = secondary-t=new_tab
+keybind = secondary-w=close_pane_or_tab
+keybind = secondary-1=switch_to_tab_1
+keybind = secondary-2=switch_to_tab_2
+keybind = secondary-3=switch_to_tab_3
+
+# Panes (Vim-style)
+keybind = secondary-v=split_pane_vertical
+keybind = secondary-s=split_pane_horizontal
+keybind = secondary-h=focus_pane_left
+keybind = secondary-j=focus_pane_down
+keybind = secondary-k=focus_pane_up
+keybind = secondary-l=focus_pane_right
+keybind = secondary-z=toggle_pane_zoom
+
+# Search
+keybind = secondary-f=open_search
+keybind = secondary-g=search_next
+keybind = secondary-shift-g=search_previous
+
+# Copy/paste
+keybind = secondary-c=copy
+keybind = secondary-v=paste
+
+# Zoom
+keybind = secondary-plus=zoom_in
+keybind = secondary-minus=zoom_out
+keybind = secondary-0=zoom_reset
+```
+
+## Command Palette Integration
+
+<ParamField path="command_palette_show_keybinds" type="boolean" default="true">
+  Show keyboard shortcut badges in command palette rows.
+  
+  When enabled, the command palette displays the active keybinding next to each command.
+</ParamField>
+
+```txt
+command_palette_show_keybinds = true
+```
+
+This helps you discover and remember keybindings while using the command palette.
+
+## Tips
+
+<Tip>
+**Discovering Actions**: Open the Command Palette (`Cmd+P` or `Ctrl+P`) to see all available commands and their current keybindings.
+</Tip>
+
+<Tip>
+**Testing Keybindings**: Termy reloads configuration automatically. Edit your config file and test bindings immediately without restarting.
+</Tip>
+
+<Warning>
+Some keybindings may conflict with system shortcuts or other applications. Use unique combinations to avoid conflicts.
+</Warning>

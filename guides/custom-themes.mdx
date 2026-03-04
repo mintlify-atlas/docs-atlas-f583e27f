@@ -1,0 +1,365 @@
+---
+title: "Creating Custom Themes"
+description: "Design and implement custom color themes for Termy with JSON theme files, color validation, and theme schema support"
+---
+
+Termy supports custom color themes through simple JSON files. This guide will show you how to create, validate, and apply your own themes.
+
+## Theme Structure
+
+Termy themes are JSON files that define colors for the terminal UI. Each theme must include:
+
+- **Foreground/Background**: Primary text and terminal background colors
+- **Cursor**: Cursor color
+- **ANSI Colors**: Standard 16-color palette (black through bright_white)
+
+## Understanding the Theme Schema
+
+Termy includes a JSON schema that validates theme files and provides autocomplete in compatible editors.
+
+### Schema Format
+
+All colors must be in 6-digit hex format: `#RRGGBB`
+
+```json
+{
+  "$schema": "../theme.schema.json",
+  "foreground": "#e0e0e0",
+  "background": "#1a1a1a",
+  "cursor": "#ffffff"
+}
+```
+
+<Note>
+  The schema enforces the pattern `^#[0-9a-fA-F]{6}$` for all color values. Invalid formats will be rejected.
+</Note>
+
+### Required Color Keys
+
+| Key | Description |
+|-----|-------------|
+| `foreground` | Default text color |
+| `background` | Terminal background color |
+| `cursor` | Cursor color |
+| `black` | ANSI color 0 |
+| `red` | ANSI color 1 |
+| `green` | ANSI color 2 |
+| `yellow` | ANSI color 3 |
+| `blue` | ANSI color 4 |
+| `magenta` | ANSI color 5 |
+| `cyan` | ANSI color 6 |
+| `white` | ANSI color 7 |
+| `bright_black` | ANSI color 8 (gray) |
+| `bright_red` | ANSI color 9 |
+| `bright_green` | ANSI color 10 |
+| `bright_yellow` | ANSI color 11 |
+| `bright_blue` | ANSI color 12 |
+| `bright_magenta` | ANSI color 13 |
+| `bright_cyan` | ANSI color 14 |
+| `bright_white` | ANSI color 15 |
+
+## Creating Your First Theme
+
+<Steps>
+  <Step title="Create Theme Directory">
+    Navigate to the Termy themes directory:
+    
+    ```bash
+    cd ~/.config/termy/themes/
+    # or create it if it doesn't exist
+    mkdir -p ~/.config/termy/themes/
+    ```
+  </Step>
+  
+  <Step title="Create Theme File">
+    Create a new JSON file with your theme name:
+    
+    ```bash
+    touch my-theme.json
+    ```
+  </Step>
+  
+  <Step title="Add Schema Reference">
+    Start with the schema reference for validation:
+    
+    ```json
+    {
+      "$schema": "../theme.schema.json"
+    }
+    ```
+  </Step>
+  
+  <Step title="Define Core Colors">
+    Add the essential colors:
+    
+    ```json
+    {
+      "$schema": "../theme.schema.json",
+      "foreground": "#e0e0e0",
+      "background": "#1a1a1a",
+      "cursor": "#ffffff"
+    }
+    ```
+  </Step>
+  
+  <Step title="Add ANSI Colors">
+    Complete the theme with all 16 ANSI colors (see full example below)
+  </Step>
+</Steps>
+
+## Complete Theme Example
+
+Here's a complete custom theme:
+
+```json
+{
+  "$schema": "../theme.schema.json",
+  "foreground": "#e0e0e0",
+  "background": "#1a1a1a",
+  "cursor": "#ffffff",
+  "black": "#1a1a1a",
+  "red": "#ff6b6b",
+  "green": "#69db7c",
+  "yellow": "#ffd43b",
+  "blue": "#74c0fc",
+  "magenta": "#da77f2",
+  "cyan": "#66d9e8",
+  "white": "#e0e0e0",
+  "bright_black": "#4a4a4a",
+  "bright_red": "#ff8787",
+  "bright_green": "#8ce99a",
+  "bright_yellow": "#ffe066",
+  "bright_blue": "#a5d8ff",
+  "bright_magenta": "#e599f7",
+  "bright_cyan": "#99e9f2",
+  "bright_white": "#ffffff"
+}
+```
+
+## Importing Themes from Other Terminals
+
+You can convert color schemes from other terminals to Termy's format.
+
+### From iTerm2
+
+iTerm2 exports colors in XML format. Extract hex values and map them:
+
+- **Foreground Color** → `foreground`
+- **Background Color** → `background`
+- **Cursor Color** → `cursor`
+- **Ansi 0 Color** → `black`
+- **Ansi 1 Color** → `red`
+- And so on...
+
+### From Alacritty
+
+Alacritty uses YAML format:
+
+```yaml
+colors:
+  primary:
+    background: '#1a1a1a'
+    foreground: '#e0e0e0'
+```
+
+Convert to Termy JSON:
+
+```json
+{
+  "background": "#1a1a1a",
+  "foreground": "#e0e0e0"
+}
+```
+
+### From Terminal.app
+
+Export Terminal.app themes and extract RGB values, then convert to hex:
+
+```bash
+# RGB(26, 26, 26) becomes #1a1a1a
+```
+
+<Note>
+  When converting, ensure all hex values are uppercase or lowercase consistently for readability.
+</Note>
+
+## Applying Your Theme
+
+<Steps>
+  <Step title="Save Theme File">
+    Save your theme JSON file in `~/.config/termy/themes/my-theme.json`
+  </Step>
+  
+  <Step title="Update Configuration">
+    Edit `~/.config/termy/config.txt`:
+    
+    ```txt
+    theme = my-theme
+    ```
+    
+    Note: Use the filename without the `.json` extension
+  </Step>
+  
+  <Step title="Reload Termy">
+    Restart Termy or use the Settings UI to switch themes
+  </Step>
+</Steps>
+
+## Overriding Theme Colors
+
+You can override individual colors without creating a full theme:
+
+```txt
+# In config.txt
+theme = tokyo-night-dark
+
+[colors]
+foreground = #e7ebf5
+background = #0b1020
+cursor = #a7e9a3
+```
+
+The `[colors]` section supports:
+- All theme color keys
+- Color aliases like `fg` (foreground), `bg` (background)
+- ANSI color numbers like `color0` (black), `color1` (red)
+
+<Warning>
+  Color overrides in `[colors]` take precedence over the selected theme. Remove overrides to use the theme's original colors.
+</Warning>
+
+## Built-in Themes
+
+Termy includes several built-in themes:
+
+- **termy**: Default Termy theme
+- **tokyo-night-dark**: Popular dark theme with cool tones
+- **tokyo-night-light**: Light variant of Tokyo Night
+- **clean-dark**: Minimal dark theme with vibrant accents
+- **shadcn-dark**: shadcn-inspired color palette
+
+Examine these themes for inspiration:
+
+```bash
+ls ~/.config/termy/themes/
+```
+
+## Theme Validation
+
+Termy validates themes against the schema. Common errors:
+
+### Invalid Hex Format
+
+```json
+{
+  "foreground": "e0e0e0"  // Missing #
+}
+```
+
+**Fix:** Always include the `#` prefix:
+
+```json
+{
+  "foreground": "#e0e0e0"
+}
+```
+
+### Wrong Hex Length
+
+```json
+{
+  "foreground": "#e0e"  // Too short
+}
+```
+
+**Fix:** Use exactly 6 hex digits:
+
+```json
+{
+  "foreground": "#e0e0e0"
+}
+```
+
+### Missing Required Keys
+
+If your theme is missing required colors, Termy will fall back to defaults or show validation errors.
+
+<Note>
+  Use a JSON-aware editor with schema validation (VS Code, Sublime Text, etc.) to catch errors before applying the theme.
+</Note>
+
+## Color Palette Guidelines
+
+### Contrast Ratios
+
+For readability, maintain good contrast:
+
+- **Text on background**: Aim for 7:1 ratio (WCAG AAA)
+- **Cursor on background**: Should be clearly visible
+- **ANSI colors**: Should be distinguishable from each other
+
+### Color Harmony
+
+Consider using color theory:
+
+- **Monochromatic**: Variations of a single hue
+- **Analogous**: Adjacent colors on the color wheel
+- **Complementary**: Opposite colors for high contrast
+
+### Testing Your Theme
+
+Test with real-world content:
+
+```bash
+# Show all ANSI colors
+for i in {0..15}; do
+  echo -e "\e[38;5;${i}mColor ${i}\e[0m"
+done
+
+# Test syntax highlighting
+ls --color=auto
+git log --oneline --color
+```
+
+## Sharing Your Theme
+
+Share your theme with the community:
+
+1. Upload your JSON file to a GitHub Gist
+2. Include a screenshot of your theme in action
+3. Document any special considerations (e.g., works best with specific fonts)
+
+## Troubleshooting
+
+### Theme Not Loading
+
+**Check file location:**
+```bash
+ls ~/.config/termy/themes/my-theme.json
+```
+
+**Verify JSON syntax:**
+```bash
+jq . ~/.config/termy/themes/my-theme.json
+```
+
+### Colors Look Different
+
+Ensure your display is calibrated and check:
+- Terminal opacity settings (`background_opacity`)
+- Background blur (`background_blur`)
+- System-level color profiles
+
+### Schema Validation Errors
+
+If your editor shows schema errors:
+
+1. Check that `$schema` path is correct relative to your theme file
+2. Verify all colors match the `#RRGGBB` format
+3. Ensure no extra or missing properties
+
+## Next Steps
+
+- Explore [Font Configuration](/guides/font-configuration) to pair fonts with your theme
+- Learn about [Shell Integration](/guides/shell-integration) for dynamic tab titles
+- Check out [Tmux Setup](/guides/tmux-setup) for advanced terminal workflows

@@ -1,0 +1,357 @@
+---
+title: 'List Keybindings'
+description: 'Display all keyboard shortcuts and available actions'
+---
+
+Termy provides commands to inspect keyboard shortcuts, available actions, and theme colors.
+
+## List Keybindings
+
+The `-list-keybinds` command displays all active keyboard shortcuts in your configuration.
+
+### Usage
+
+```bash
+termy-cli -list-keybinds
+```
+
+### What It Does
+
+This command:
+1. Loads your configuration file
+2. Parses keybind directives
+3. Resolves keybindings (including defaults)
+4. Displays each binding with metadata
+
+### Example Output
+
+```
+secondary-t = new_tab	available=true	tmux_required=false	restart_required=false
+secondary-w = close_tab	available=true	tmux_required=false	restart_required=false
+secondary-n = new_window	available=true	tmux_required=false	restart_required=false
+secondary-p = toggle_command_palette	available=true	tmux_required=false	restart_required=false
+secondary-, = open_settings	available=true	tmux_required=false	restart_required=false
+control-shift-c = copy	available=true	tmux_required=false	restart_required=false
+control-shift-v = paste	available=true	tmux_required=false	restart_required=false
+secondary-= = zoom_in	available=true	tmux_required=false	restart_required=false
+secondary-- = zoom_out	available=true	tmux_required=false	restart_required=false
+secondary-0 = zoom_reset	available=true	tmux_required=false	restart_required=false
+secondary-alt-shift-left = resize_pane_left	available=false	tmux_required=true	restart_required=true
+secondary-alt-shift-right = resize_pane_right	available=false	tmux_required=true	restart_required=true
+```
+
+### Output Format
+
+Each line contains:
+- **Trigger**: Key combination (e.g., `secondary-t`, `control-shift-c`)
+- **Action**: Command to execute (e.g., `new_tab`, `copy`)
+- **Metadata** (tab-separated):
+  - `available`: Whether action is currently enabled
+  - `tmux_required`: Whether action requires tmux mode
+  - `restart_required`: Whether enabling requires restart
+
+<Note>
+`secondary` is a platform-aware modifier:
+- **macOS**: Cmd (⌘)
+- **Linux/Windows**: Ctrl
+</Note>
+
+### Use Cases
+
+#### Finding a Specific Keybinding
+
+<CodeGroup>
+```bash Search by Action
+termy-cli -list-keybinds | grep "copy"
+```
+
+```bash Output
+control-shift-c = copy	available=true	tmux_required=false	restart_required=false
+```
+</CodeGroup>
+
+#### Identifying Tmux-Only Keybinds
+
+```bash
+termy-cli -list-keybinds | grep "tmux_required=true"
+```
+
+These keybindings only work when `tmux_enabled = true` in your config.
+
+#### Exporting Keybindings
+
+```bash
+termy-cli -list-keybinds > my-keybinds.txt
+```
+
+---
+
+## List Actions
+
+The `-list-actions` command shows all available actions you can bind to keyboard shortcuts.
+
+### Usage
+
+```bash
+termy-cli -list-actions
+```
+
+### What It Does
+
+This command lists every action available in Termy, with metadata indicating:
+- Whether it's currently available
+- Whether it requires tmux mode
+- Whether enabling it requires a restart
+
+### Example Output
+
+```
+new_tab	available=true	tmux_required=false	restart_required=false
+close_tab	available=true	tmux_required=false	restart_required=false
+new_window	available=true	tmux_required=false	restart_required=false
+toggle_command_palette	available=true	tmux_required=false	restart_required=false
+copy	available=true	tmux_required=false	restart_required=false
+paste	available=true	tmux_required=false	restart_required=false
+zoom_in	available=true	tmux_required=false	restart_required=false
+zoom_out	available=true	tmux_required=false	restart_required=false
+resize_pane_left	available=false	tmux_required=true	restart_required=true
+resize_pane_right	available=false	tmux_required=true	restart_required=true
+install_cli	available=true	tmux_required=false	restart_required=false
+```
+
+### Action Categories
+
+<AccordionGroup>
+  <Accordion title="Window & Tab Management">
+    - `new_tab`: Create a new tab
+    - `close_tab`: Close current tab
+    - `new_window`: Open a new window
+    - `select_next_tab`: Switch to next tab
+    - `select_previous_tab`: Switch to previous tab
+  </Accordion>
+  
+  <Accordion title="Text Operations">
+    - `copy`: Copy selected text
+    - `paste`: Paste from clipboard
+    - `select_all`: Select all text
+  </Accordion>
+  
+  <Accordion title="View & Display">
+    - `zoom_in`: Increase font size
+    - `zoom_out`: Decrease font size
+    - `zoom_reset`: Reset to default font size
+    - `toggle_fullscreen`: Enter/exit fullscreen
+  </Accordion>
+  
+  <Accordion title="Pane Management (Tmux)">
+    - `split_horizontal`: Split pane horizontally
+    - `split_vertical`: Split pane vertically
+    - `resize_pane_left`: Resize pane left
+    - `resize_pane_right`: Resize pane right
+    - `resize_pane_up`: Resize pane up
+    - `resize_pane_down`: Resize pane down
+    
+    <Warning>
+    These actions require `tmux_enabled = true` in your configuration.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="Settings & Navigation">
+    - `toggle_command_palette`: Open command palette
+    - `open_settings`: Open settings UI
+    - `install_cli`: Install CLI integration
+  </Accordion>
+</AccordionGroup>
+
+### Use Cases
+
+#### Finding Available Actions
+
+<CodeGroup>
+```bash Search by Name
+termy-cli -list-actions | grep "pane"
+```
+
+```bash Output
+resize_pane_left	available=false	tmux_required=true	restart_required=true
+resize_pane_right	available=false	tmux_required=true	restart_required=true
+resize_pane_up	available=false	tmux_required=true	restart_required=true
+resize_pane_down	available=false	tmux_required=true	restart_required=true
+```
+</CodeGroup>
+
+#### Listing Non-Tmux Actions
+
+```bash
+termy-cli -list-actions | grep "tmux_required=false"
+```
+
+#### Creating Custom Keybindings
+
+Use `-list-actions` to discover action names for your custom bindings:
+
+<Steps>
+  <Step title="Find action name">
+    ```bash
+    termy-cli -list-actions | grep "zoom"
+    ```
+  </Step>
+  
+  <Step title="Add to configuration">
+    ```bash
+    termy-cli -edit-config
+    ```
+    
+    ```toml
+    # Custom zoom keybindings
+    keybind = control-plus=zoom_in
+    keybind = control-minus=zoom_out
+    ```
+  </Step>
+  
+  <Step title="Validate">
+    ```bash
+    termy-cli -validate-config
+    ```
+  </Step>
+</Steps>
+
+---
+
+## List Colors
+
+The `-list-colors` command displays the color palette for your currently active theme.
+
+### Usage
+
+```bash
+termy-cli -list-colors
+```
+
+### What It Does
+
+This command:
+1. Loads your configuration
+2. Reads the active theme
+3. Resolves theme colors
+4. Displays the complete color palette
+
+### Example Output
+
+```
+Theme: nord
+
+foreground = #d8dee9
+background = #2e3440
+cursor = #d8dee9
+black = #3b4252
+red = #bf616a
+green = #a3be8c
+yellow = #ebcb8b
+blue = #81a1c1
+magenta = #b48ead
+cyan = #88c0d0
+white = #e5e9f0
+bright_black = #4c566a
+bright_red = #bf616a
+bright_green = #a3be8c
+bright_yellow = #ebcb8b
+bright_blue = #81a1c1
+bright_magenta = #b48ead
+bright_cyan = #8fbcbb
+bright_white = #eceff4
+```
+
+### Color Properties
+
+| Property | Description |
+|----------|-------------|
+| `foreground` | Default text color |
+| `background` | Terminal background color |
+| `cursor` | Cursor color |
+| `black` – `white` | Standard ANSI colors (0-7) |
+| `bright_black` – `bright_white` | Bright ANSI colors (8-15) |
+
+### Use Cases
+
+#### Inspecting Theme Colors
+
+View colors before committing to a theme:
+
+<CodeGroup>
+```bash View Current Theme
+termy-cli -list-colors
+```
+
+```bash Compare Themes
+# Save current colors
+termy-cli -list-colors > current-theme.txt
+
+# Change theme in config
+termy-cli -edit-config
+# Set theme = "dracula"
+
+# View new colors
+termy-cli -list-colors
+```
+</CodeGroup>
+
+#### Extracting Specific Colors
+
+<CodeGroup>
+```bash Get Background Color
+termy-cli -list-colors | grep "^background"
+```
+
+```bash Output
+background = #2e3440
+```
+</CodeGroup>
+
+#### Creating Custom Theme
+
+Use an existing theme as a starting point:
+
+```bash
+# Export nord colors
+termy-cli -list-colors > nord-base.txt
+
+# Edit to create your custom theme
+termy-cli -edit-config
+```
+
+```toml
+theme = "my-custom-theme"
+
+[colors]
+# Modified nord colors
+foreground = "#d8dee9"
+background = "#1a1f2e"  # Darker background
+cursor = "#88c0d0"      # Cyan cursor
+# ... rest of colors
+```
+
+## Keybinding Configuration
+
+See the [Keybindings Configuration](/configuration/keybindings) guide for detailed information on:
+- Custom keybinding syntax
+- Modifier keys
+- Unbinding defaults
+- Platform-specific bindings
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="Edit Config" icon="pen-to-square" href="/cli/config-management#edit-config">
+    Create custom keybindings
+  </Card>
+  <Card title="Validate Config" icon="check" href="/cli/config-management#validate-config">
+    Check keybinding syntax
+  </Card>
+  <Card title="List Themes" icon="palette" href="/cli/list-themes">
+    Browse available themes
+  </Card>
+  <Card title="Interactive TUI" icon="terminal" href="/cli/tui">
+    Visual keybinding browser
+  </Card>
+</CardGroup>

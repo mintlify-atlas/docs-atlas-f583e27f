@@ -1,0 +1,286 @@
+---
+title: Terminal Settings
+description: Configure tmux, shell, cursor, scrolling, and terminal behavior
+---
+
+Configure core terminal functionality including tmux integration, shell settings, cursor behavior, and scrolling.
+
+## Tmux Integration
+
+Termy includes powerful tmux integration for advanced terminal multiplexing.
+
+<ParamField path="tmux_enabled" type="boolean" default="false">
+  Enable tmux runtime integration. When enabled, Termy starts in tmux mode by default.
+  
+  <Note>Tmux integration is an add-on feature. Many tmux-related commands require an active tmux session.</Note>
+</ParamField>
+
+<ParamField path="tmux_persistence" type="boolean" default="true">
+  Reuse tmux tabs and panes across app restarts. When enabled, Termy reconnects to existing tmux sessions.
+</ParamField>
+
+<ParamField path="tmux_binary" type="string" default="tmux">
+  Path to the tmux executable or binary name. Useful if tmux is installed in a non-standard location.
+</ParamField>
+
+<ParamField path="tmux_show_active_pane_border" type="boolean" default="false">
+  Show active tmux pane border highlight in managed sessions.
+</ParamField>
+
+```txt
+tmux_enabled = true
+tmux_persistence = true
+tmux_binary = tmux
+tmux_show_active_pane_border = false
+```
+
+### Tmux Usage
+
+<Tip>
+Use "Tmux Sessions..." from the Command Palette or File menu to attach, switch, create, and manage sessions at runtime.
+</Tip>
+
+With tmux enabled, you get:
+
+- **Session persistence** across app restarts
+- **Advanced pane management** with splitting and resizing
+- **Session switching** to manage multiple workspaces
+- **Pane zoom** to focus on a single pane
+
+Many pane-related commands require an active tmux session:
+- `split_pane_vertical` / `split_pane_horizontal`
+- `resize_pane_*` actions
+- `toggle_pane_zoom`
+
+<Warning>
+Tmux integration is not available on Windows.
+</Warning>
+
+## Shell Configuration
+
+<ParamField path="shell" type="string" default="unset">
+  Executable used for new terminal sessions. If unset, Termy uses the system default shell.
+  
+  Can be a binary name (e.g., `fish`) or full path (e.g., `/opt/homebrew/bin/fish`).
+</ParamField>
+
+```txt
+# Use default shell (unset)
+# shell = none
+
+# Use a specific shell
+shell = fish
+
+# Use full path
+shell = /opt/homebrew/bin/fish
+```
+
+### Shell Examples
+
+```txt
+# Fish shell
+shell = fish
+
+# Zsh
+shell = zsh
+
+# Bash
+shell = bash
+
+# Custom shell with full path
+shell = /usr/local/bin/nu
+```
+
+## Environment Variables
+
+<ParamField path="term" type="string" default="xterm-256color">
+  `TERM` environment variable value exposed to child applications.
+</ParamField>
+
+<ParamField path="colorterm" type="string" default="truecolor">
+  `COLORTERM` environment variable value exposed to child applications.
+</ParamField>
+
+```txt
+term = xterm-256color
+colorterm = truecolor
+```
+
+<Note>
+Most users should keep the default values. Only change these if you have specific compatibility requirements.
+</Note>
+
+## Cursor
+
+<ParamField path="cursor_style" type="string" default="block">
+  Shape of the terminal cursor. Available options:
+  - `block` - Classic block cursor
+  - `beam` - Vertical line cursor
+  - `underline` - Underline cursor
+</ParamField>
+
+<ParamField path="cursor_blink" type="boolean" default="true">
+  Enable blinking cursor animation.
+</ParamField>
+
+```txt
+cursor_style = block
+cursor_blink = true
+```
+
+### Cursor Examples
+
+```txt
+# Block cursor with blinking
+cursor_style = block
+cursor_blink = true
+
+# Beam cursor (like VSCode)
+cursor_style = beam
+cursor_blink = true
+
+# Underline cursor without blinking
+cursor_style = underline
+cursor_blink = false
+```
+
+## Scrolling
+
+<ParamField path="scrollback_history" type="number" default="2000">
+  Lines retained in terminal scrollback buffer. Also accepts the alias `scrollback`.
+  
+  Higher values use more memory but allow scrolling further back in history.
+</ParamField>
+
+<ParamField path="inactive_tab_scrollback" type="number" default="unset">
+  Scrollback limit for inactive tabs. If unset, uses the same value as `scrollback_history`.
+  
+  Set lower to conserve memory on inactive tabs.
+</ParamField>
+
+<ParamField path="mouse_scroll_multiplier" type="number" default="3">
+  Mouse wheel scroll speed multiplier. Higher values scroll faster.
+</ParamField>
+
+```txt
+scrollback_history = 2000
+mouse_scroll_multiplier = 3
+# inactive_tab_scrollback = none
+```
+
+### Scrollback Examples
+
+```txt
+# Minimal scrollback (lower memory)
+scrollback_history = 1000
+
+# Generous scrollback
+scrollback_history = 10000
+
+# Different scrollback for inactive tabs
+scrollback_history = 10000
+inactive_tab_scrollback = 2000
+
+# Faster scrolling
+mouse_scroll_multiplier = 5
+```
+
+## Scrollbar
+
+<ParamField path="scrollbar_visibility" type="string" default="on_scroll">
+  Terminal scrollbar visibility behavior:
+  - `on_scroll` - Show when scrolling
+  - `always` - Always visible
+  - `never` - Always hidden
+</ParamField>
+
+<ParamField path="scrollbar_style" type="string" default="neutral">
+  Terminal scrollbar color style.
+</ParamField>
+
+```txt
+scrollbar_visibility = on_scroll
+scrollbar_style = neutral
+```
+
+### Scrollbar Examples
+
+```txt
+# Show scrollbar only when scrolling
+scrollbar_visibility = on_scroll
+scrollbar_style = neutral
+
+# Always show scrollbar
+scrollbar_visibility = always
+
+# Hide scrollbar completely
+scrollbar_visibility = never
+```
+
+## Startup
+
+<ParamField path="working_dir" type="string" default="unset">
+  Initial directory for new terminal sessions. If unset, uses `working_dir_fallback`.
+</ParamField>
+
+<ParamField path="working_dir_fallback" type="string" default="home (macOS/Windows), process (Linux)">
+  Directory used when `working_dir` is unset. Also accepts the alias `default_working_dir`.
+  
+  Options:
+  - `home` - User's home directory
+  - `process` - Current process working directory
+</ParamField>
+
+```txt
+# Use home directory
+# working_dir = none
+working_dir_fallback = home
+
+# Use specific directory
+working_dir = ~/projects
+```
+
+## Safety
+
+<ParamField path="warn_on_quit_with_running_process" type="boolean" default="true">
+  Warn before quitting when a tab has an active process running.
+  
+  Prevents accidental data loss from closing terminals with active commands.
+</ParamField>
+
+```txt
+warn_on_quit_with_running_process = true
+```
+
+## Complete Example
+
+```txt
+# Tmux integration
+tmux_enabled = true
+tmux_persistence = true
+tmux_binary = /opt/homebrew/bin/tmux
+tmux_show_active_pane_border = false
+
+# Shell
+shell = /opt/homebrew/bin/fish
+term = xterm-256color
+colorterm = truecolor
+
+# Cursor
+cursor_style = beam
+cursor_blink = true
+
+# Scrolling
+scrollback_history = 10000
+inactive_tab_scrollback = 2000
+mouse_scroll_multiplier = 3
+scrollbar_visibility = on_scroll
+scrollbar_style = neutral
+
+# Startup
+working_dir = ~/projects
+working_dir_fallback = home
+
+# Safety
+warn_on_quit_with_running_process = true
+```

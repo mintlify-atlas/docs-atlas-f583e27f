@@ -1,0 +1,510 @@
+---
+title: "Shell Integration"
+description: "Configure TERMY_* environment variables, customize tab titles, and integrate shell prompts with Termy for dynamic terminal experiences"
+---
+
+Termy's shell integration enables automatic tab title updates, prompt-aware features, and enhanced terminal workflows through environment variables and shell hooks.
+
+## What is Shell Integration?
+
+Shell integration allows Termy to:
+- Automatically update tab titles based on current directory or command
+- Detect shell prompt state for better interaction
+- Export environment variables for custom shell configurations
+- Provide context-aware features based on what's running in the terminal
+
+## Environment Variables
+
+When shell integration is enabled, Termy exports these environment variables:
+
+### TERMY_SHELL_INTEGRATION
+
+Indicates whether shell integration is active:
+
+```bash
+echo $TERMY_SHELL_INTEGRATION
+# Output: 1 (enabled) or 0 (disabled)
+```
+
+Use this to conditionally configure your shell:
+
+```bash
+# In your .bashrc or .zshrc
+if [ "$TERMY_SHELL_INTEGRATION" = "1" ]; then
+  # Termy-specific configuration
+  export PS1="[termy] $PS1"
+fi
+```
+
+### TERMY_TAB_TITLE_PREFIX
+
+The prefix used for explicit tab title updates:
+
+```bash
+echo $TERMY_TAB_TITLE_PREFIX
+# Output: termy:tab:
+```
+
+Use this prefix to set tab titles explicitly:
+
+```bash
+echo -en "\033]0;${TERMY_TAB_TITLE_PREFIX}My Custom Title\007"
+```
+
+<Note>
+  Shell integration variables are only exported when `tab_title_shell_integration = true` in your configuration.
+</Note>
+
+## Enabling Shell Integration
+
+<Steps>
+  <Step title="Open Configuration">
+    Edit `~/.config/termy/config.txt`
+  </Step>
+  
+  <Step title="Enable Integration">
+    Set shell integration to true:
+    
+    ```txt
+    tab_title_shell_integration = true
+    ```
+  </Step>
+  
+  <Step title="Configure Tab Title Behavior">
+    Customize how tab titles are determined:
+    
+    ```txt
+    # Priority order for tab title sources
+    tab_title_priority = manual, explicit, shell, fallback
+    
+    # Smart mode uses priority list
+    tab_title_mode = smart
+    
+    # Fallback title when no source available
+    tab_title_fallback = Terminal
+    
+    # Prefix for explicit title updates
+    tab_title_explicit_prefix = termy:tab:
+    ```
+  </Step>
+  
+  <Step title="Restart Termy">
+    Launch a new terminal session to apply changes
+  </Step>
+</Steps>
+
+## Tab Title Customization
+
+### Tab Title Priority
+
+Termy determines tab titles using a priority system:
+
+1. **Manual**: User-set title via UI
+2. **Explicit**: OSC escape sequence with prefix (e.g., `termy:tab:My Title`)
+3. **Shell**: Derived from shell prompt or current command
+4. **Fallback**: Default title from configuration
+
+Configure the priority order:
+
+```txt
+# Check manual first, then explicit, then shell, finally fallback
+tab_title_priority = manual, explicit, shell, fallback
+```
+
+### Tab Title Modes
+
+**Smart Mode** (default):
+Uses the priority list to determine the best title source
+
+```txt
+tab_title_mode = smart
+```
+
+**Static Mode**:
+Always uses the fallback title
+
+```txt
+tab_title_mode = static
+tab_title_fallback = My Terminal
+```
+
+### Template Formats
+
+Customize how prompt-derived and command-derived titles appear:
+
+```txt
+# Show current working directory
+tab_title_prompt_format = {cwd}
+
+# Show running command name
+tab_title_command_format = {command}
+```
+
+Available template variables:
+- `{cwd}`: Current working directory (basename)
+- `{command}`: Current running command
+
+<Note>
+  Template formatting requires cooperation from your shell prompt. See shell-specific setup below.
+</Note>
+
+## Shell-Specific Setup
+
+### Bash
+
+Add to your `~/.bashrc`:
+
+```bash
+if [ "$TERMY_SHELL_INTEGRATION" = "1" ]; then
+  # Update tab title with current directory
+  update_tab_title() {
+    local cwd=$(basename "$PWD")
+    echo -en "\033]0;${TERMY_TAB_TITLE_PREFIX}${cwd}\007"
+  }
+  
+  # Call before each prompt
+  PROMPT_COMMAND="update_tab_title${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+fi
+```
+
+### Zsh
+
+Add to your `~/.zshrc`:
+
+```zsh
+if [[ "$TERMY_SHELL_INTEGRATION" == "1" ]]; then
+  # Update tab title with current directory
+  update_tab_title() {
+    local cwd=${PWD:t}
+    echo -en "\033]0;${TERMY_TAB_TITLE_PREFIX}${cwd}\007"
+  }
+  
+  # Call before each prompt
+  autoload -Uz add-zsh-hook
+  add-zsh-hook precmd update_tab_title
+fi
+```
+
+### Fish
+
+Add to your `~/.config/fish/config.fish`:
+
+```fish
+if test "$TERMY_SHELL_INTEGRATION" = "1"
+  function update_tab_title --on-event fish_prompt
+    set -l cwd (basename $PWD)
+    echo -en "\033]0;$TERMY_TAB_TITLE_PREFIX$cwd\007"
+  end
+end
+```
+
+<Warning>
+  When tmux mode is enabled, Termy disables shell integration for tmux child processes to prevent conflicts with tmux control mode.
+</Warning>
+
+## Explicit Tab Titles
+
+Set tab titles programmatically using OSC escape sequences:
+
+### Basic Usage
+
+```bash
+# Set tab title to "Build Logs"
+echo -en "\033]0;termy:tab:Build Logs\007"
+```
+
+### In Scripts
+
+Add tab title updates to long-running scripts:
+
+```bash
+#!/bin/bash
+
+set_tab_title() {
+  echo -en "\033]0;${TERMY_TAB_TITLE_PREFIX}$1\007"
+}
+
+set_tab_title "Running Tests"
+npm test
+
+set_tab_title "Building App"
+npm run build
+
+set_tab_title "Deployment"
+npm run deploy
+
+set_tab_title "Done"
+```
+
+### Custom Prefix
+
+Change the prefix if you have conflicts:
+
+```txt
+tab_title_explicit_prefix = myapp:title:
+```
+
+Then use in your shell:
+
+```bash
+echo -en "\033]0;myapp:title:Custom Title\007"
+```
+
+## Prompt Integration
+
+### Detecting Prompt State
+
+Termy can detect when your shell is at a prompt vs. running a command. This enables:
+- Different visual states for idle vs. active terminals
+- Context-aware keyboard shortcuts
+- Smarter copy/paste behavior
+
+### Current Working Directory
+
+Automatic directory updates keep tab titles in sync with your location:
+
+```bash
+# When you cd, the tab title updates automatically
+cd ~/projects/my-app
+# Tab title: my-app
+
+cd /var/log
+# Tab title: log
+```
+
+Configure the format:
+
+```txt
+# Show just the directory name (default)
+tab_title_prompt_format = {cwd}
+
+# Show full path (requires custom shell hook)
+tab_title_prompt_format = {full_path}
+```
+
+## Advanced Configuration
+
+### Disable Integration for Specific Shells
+
+If you run multiple shells and want integration only in some:
+
+```bash
+# In .bashrc - enable integration
+# (TERMY_SHELL_INTEGRATION already set by Termy)
+
+# In tmux.conf - disable integration  
+# (Termy automatically disables for tmux)
+```
+
+### Dynamic Title Updates
+
+Create a helper function for easy title updates:
+
+```bash
+# Add to .bashrc or .zshrc
+title() {
+  echo -en "\033]0;${TERMY_TAB_TITLE_PREFIX}$*\007"
+}
+
+# Usage
+title Building project
+title Running tests on $(hostname)
+```
+
+### Conditional Integration
+
+Only enable features when in Termy:
+
+```bash
+if [ -n "$TERMY_SHELL_INTEGRATION" ]; then
+  # Termy-specific aliases
+  alias ll='ls -lah --color=auto'
+  
+  # Custom prompt
+  PS1='[termy] \u@\h:\w\$ '
+fi
+```
+
+## Troubleshooting
+
+### Environment Variables Not Set
+
+**Check configuration:**
+
+```bash
+cat ~/.config/termy/config.txt | grep shell_integration
+# Should show: tab_title_shell_integration = true
+```
+
+**Verify in new shell:**
+
+```bash
+env | grep TERMY
+# Should show TERMY_SHELL_INTEGRATION and optionally TERMY_TAB_TITLE_PREFIX
+```
+
+### Tab Titles Not Updating
+
+1. **Verify shell integration is enabled**
+   ```txt
+   tab_title_shell_integration = true
+   ```
+
+2. **Check title mode**
+   ```txt
+   tab_title_mode = smart
+   ```
+
+3. **Ensure shell hooks are installed**
+   Source your `.bashrc`, `.zshrc`, or `config.fish`
+
+4. **Test manual title update**
+   ```bash
+   echo -en "\033]0;termy:tab:Test\007"
+   ```
+
+### Prefix Not Working
+
+If explicit titles aren't recognized:
+
+1. Check the configured prefix:
+   ```bash
+   echo $TERMY_TAB_TITLE_PREFIX
+   ```
+
+2. Ensure exact match in escape sequence:
+   ```bash
+   # Correct
+   echo -en "\033]0;termy:tab:Title\007"
+   
+   # Wrong (missing prefix)
+   echo -en "\033]0;Title\007"
+   ```
+
+### Conflicts with Tmux
+
+Termy automatically disables shell integration in tmux mode:
+
+```bash
+# In tmux sessions
+echo $TERMY_SHELL_INTEGRATION
+# Output: 0
+```
+
+This is intentional to prevent conflicts with tmux control mode.
+
+<Note>
+  If you need custom titles in tmux mode, use tmux's built-in window renaming instead of shell integration.
+</Note>
+
+## Best Practices
+
+### 1. Use Meaningful Titles
+
+Set titles that reflect the current task:
+
+```bash
+title "Dev Server - Port 3000"
+title "Database Migration"
+title "Log Monitoring"
+```
+
+### 2. Reset Titles When Done
+
+Reset to default after long-running commands:
+
+```bash
+npm run build
+title "Idle"
+```
+
+### 3. Combine with Command Tracking
+
+Show both directory and active command:
+
+```bash
+update_tab_title() {
+  local cwd=$(basename "$PWD")
+  local cmd=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//')
+  echo -en "\033]0;${TERMY_TAB_TITLE_PREFIX}${cwd}: ${cmd}\007"
+}
+```
+
+### 4. Graceful Degradation
+
+Make scripts work in non-Termy terminals:
+
+```bash
+title() {
+  if [ -n "$TERMY_TAB_TITLE_PREFIX" ]; then
+    echo -en "\033]0;${TERMY_TAB_TITLE_PREFIX}$*\007"
+  else
+    echo -en "\033]0;$*\007"
+  fi
+}
+```
+
+## Examples
+
+### Project-Aware Titles
+
+Detect project type and set relevant titles:
+
+```bash
+cd() {
+  builtin cd "$@" || return
+  local cwd=$(basename "$PWD")
+  
+  if [ -f "package.json" ]; then
+    title "📦 $cwd (npm)"
+  elif [ -f "Cargo.toml" ]; then
+    title "🦀 $cwd (rust)"
+  elif [ -f "go.mod" ]; then
+    title "🐹 $cwd (go)"
+  else
+    title "$cwd"
+  fi
+}
+```
+
+### Status-Aware Titles
+
+Update titles based on command exit status:
+
+```bash
+update_title_with_status() {
+  local status=$?
+  local cwd=$(basename "$PWD")
+  
+  if [ $status -eq 0 ]; then
+    title "✓ $cwd"
+  else
+    title "✗ $cwd (exit $status)"
+  fi
+}
+
+PROMPT_COMMAND="update_title_with_status${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+```
+
+### Time-Tracking Titles
+
+Show how long a directory has been active:
+
+```bash
+cd_time=$(date +%s)
+
+update_title_with_time() {
+  local cwd=$(basename "$PWD")
+  local now=$(date +%s)
+  local elapsed=$((now - cd_time))
+  local mins=$((elapsed / 60))
+  
+  title "$cwd (${mins}m)"
+}
+```
+
+## Next Steps
+
+- Configure [Custom Themes](/guides/custom-themes) to match your workflow
+- Set up [Tmux Integration](/guides/tmux-setup) for advanced multiplexing
+- Optimize [Font Configuration](/guides/font-configuration) for readability

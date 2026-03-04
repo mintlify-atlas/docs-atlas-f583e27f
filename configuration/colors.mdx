@@ -1,0 +1,386 @@
+---
+title: Colors
+description: Customize color schemes and override theme colors
+---
+
+Customize Termy's color palette by overriding individual colors in the active theme or importing complete color schemes.
+
+## Color Section
+
+Color overrides are defined in a special `[colors]` section of your config file:
+
+```txt
+# Main settings above
+theme = termy
+
+# Color overrides
+[colors]
+foreground = #e7ebf5
+background = #0b1020
+cursor = #a7e9a3
+```
+
+Colors in the `[colors]` section override the active theme's colors.
+
+## Color Format
+
+All color values use 6-digit hexadecimal RGB format:
+
+```txt
+# Format: #RRGGBB
+foreground = #e7ebf5
+background = #0b1020
+red = #ff5555
+```
+
+<Warning>
+Colors must be exactly 6 hex digits. Short forms like `#fff` are not supported.
+</Warning>
+
+## Available Colors
+
+### Text & Background
+
+<ParamField path="foreground" type="string">
+  Default text color. Alias: `fg`
+</ParamField>
+
+<ParamField path="background" type="string">
+  Terminal background color. Alias: `bg`
+</ParamField>
+
+<ParamField path="cursor" type="string">
+  Cursor color.
+</ParamField>
+
+```txt
+[colors]
+foreground = #e7ebf5
+background = #0b1020
+cursor = #a7e9a3
+```
+
+### ANSI Colors (0-7)
+
+<ParamField path="black" type="string">
+  ANSI color 0 (black). Alias: `color0`
+</ParamField>
+
+<ParamField path="red" type="string">
+  ANSI color 1 (red). Alias: `color1`
+</ParamField>
+
+<ParamField path="green" type="string">
+  ANSI color 2 (green). Alias: `color2`
+</ParamField>
+
+<ParamField path="yellow" type="string">
+  ANSI color 3 (yellow). Alias: `color3`
+</ParamField>
+
+<ParamField path="blue" type="string">
+  ANSI color 4 (blue). Alias: `color4`
+</ParamField>
+
+<ParamField path="magenta" type="string">
+  ANSI color 5 (magenta). Alias: `color5`
+</ParamField>
+
+<ParamField path="cyan" type="string">
+  ANSI color 6 (cyan). Alias: `color6`
+</ParamField>
+
+<ParamField path="white" type="string">
+  ANSI color 7 (white). Alias: `color7`
+</ParamField>
+
+```txt
+[colors]
+black = #000000
+red = #ff5555
+green = #50fa7b
+yellow = #f1fa8c
+blue = #bd93f9
+magenta = #ff79c6
+cyan = #8be9fd
+white = #f8f8f2
+```
+
+### ANSI Bright Colors (8-15)
+
+<ParamField path="bright_black" type="string">
+  ANSI color 8 (bright black / gray). Aliases: `brightblack`, `color8`
+</ParamField>
+
+<ParamField path="bright_red" type="string">
+  ANSI color 9 (bright red). Aliases: `brightred`, `color9`
+</ParamField>
+
+<ParamField path="bright_green" type="string">
+  ANSI color 10 (bright green). Aliases: `brightgreen`, `color10`
+</ParamField>
+
+<ParamField path="bright_yellow" type="string">
+  ANSI color 11 (bright yellow). Aliases: `brightyellow`, `color11`
+</ParamField>
+
+<ParamField path="bright_blue" type="string">
+  ANSI color 12 (bright blue). Aliases: `brightblue`, `color12`
+</ParamField>
+
+<ParamField path="bright_magenta" type="string">
+  ANSI color 13 (bright magenta). Aliases: `brightmagenta`, `color13`
+</ParamField>
+
+<ParamField path="bright_cyan" type="string">
+  ANSI color 14 (bright cyan). Aliases: `brightcyan`, `color14`
+</ParamField>
+
+<ParamField path="bright_white" type="string">
+  ANSI color 15 (bright white). Aliases: `brightwhite`, `color15`
+</ParamField>
+
+```txt
+[colors]
+bright_black = #6272a4
+bright_red = #ff6e6e
+bright_green = #69ff94
+bright_yellow = #ffffa5
+bright_blue = #d6acff
+bright_magenta = #ff92df
+bright_cyan = #a4ffff
+bright_white = #ffffff
+```
+
+## Using Aliases
+
+Many colors have convenient aliases:
+
+```txt
+[colors]
+# These are equivalent
+foreground = #e7ebf5
+fg = #e7ebf5
+
+# These are equivalent
+background = #0b1020
+bg = #0b1020
+
+# These are equivalent
+red = #ff5555
+color1 = #ff5555
+
+# These are equivalent
+bright_black = #6272a4
+brightblack = #6272a4
+color8 = #6272a4
+```
+
+## Color Override Examples
+
+### Subtle Background Change
+
+Tweak just the background while keeping the rest of the theme:
+
+```txt
+theme = termy
+
+[colors]
+background = #0a0e1a
+```
+
+### Accent Color Adjustments
+
+Modify specific accent colors:
+
+```txt
+theme = termy
+
+[colors]
+blue = #82aaff
+cyan = #89ddff
+green = #c3e88d
+```
+
+### Complete Color Scheme Override
+
+Define all colors manually (Dracula theme example):
+
+```txt
+theme = termy
+
+[colors]
+foreground = #f8f8f2
+background = #282a36
+cursor = #f8f8f2
+
+# Normal colors
+black = #000000
+red = #ff5555
+green = #50fa7b
+yellow = #f1fa8c
+blue = #bd93f9
+magenta = #ff79c6
+cyan = #8be9fd
+white = #f8f8f2
+
+# Bright colors
+bright_black = #6272a4
+bright_red = #ff6e6e
+bright_green = #69ff94
+bright_yellow = #ffffa5
+bright_blue = #d6acff
+bright_magenta = #ff92df
+bright_cyan = #a4ffff
+bright_white = #ffffff
+```
+
+## Importing Color Schemes
+
+You can import complete color schemes from JSON files:
+
+1. **Command Palette**: `Cmd+P` → "Import Colors"
+2. **Menu**: `View > Import Colors`
+3. Select a theme JSON file
+
+### Theme JSON Format
+
+Theme files use JSON with hexadecimal color values:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "foreground": "#e7ebf5",
+  "background": "#0b1020",
+  "cursor": "#a7e9a3",
+  "black": "#000000",
+  "red": "#ff5555",
+  "green": "#50fa7b",
+  "yellow": "#f1fa8c",
+  "blue": "#bd93f9",
+  "magenta": "#ff79c6",
+  "cyan": "#8be9fd",
+  "white": "#f8f8f2",
+  "bright_black": "#6272a4",
+  "bright_red": "#ff6e6e",
+  "bright_green": "#69ff94",
+  "bright_yellow": "#ffffa5",
+  "bright_blue": "#d6acff",
+  "bright_magenta": "#ff92df",
+  "bright_cyan": "#a4ffff",
+  "bright_white": "#ffffff"
+}
+```
+
+All color fields are optional. Omitted colors use the base theme's values.
+
+## Switching Themes
+
+To switch between themes at runtime:
+
+1. **Command Palette**: `Cmd+P` → "Switch Theme"
+2. **Menu**: `View > Switch Theme`
+3. **Settings UI**: Open Settings and select a theme
+
+You can also change the theme in your config file:
+
+```txt
+theme = tokyo-night
+```
+
+## Theme Development Tips
+
+<Tip>
+**Test Changes Live**: Termy reloads configuration automatically. Edit colors in your config file and see changes immediately.
+</Tip>
+
+<Tip>
+**Start with a Base**: Pick a theme close to your goal, then override specific colors instead of defining everything from scratch.
+</Tip>
+
+<Warning>
+Color overrides in the `[colors]` section apply to ALL themes. If you switch themes, your overrides remain active.
+</Warning>
+
+## Popular Color Schemes
+
+### Tokyo Night
+
+```txt
+theme = termy
+
+[colors]
+foreground = #c0caf5
+background = #1a1b26
+cursor = #c0caf5
+black = #15161e
+red = #f7768e
+green = #9ece6a
+yellow = #e0af68
+blue = #7aa2f7
+magenta = #bb9af7
+cyan = #7dcfff
+white = #a9b1d6
+bright_black = #414868
+bright_red = #f7768e
+bright_green = #9ece6a
+bright_yellow = #e0af68
+bright_blue = #7aa2f7
+bright_magenta = #bb9af7
+bright_cyan = #7dcfff
+bright_white = #c0caf5
+```
+
+### Nord
+
+```txt
+theme = termy
+
+[colors]
+foreground = #d8dee9
+background = #2e3440
+cursor = #d8dee9
+black = #3b4252
+red = #bf616a
+green = #a3be8c
+yellow = #ebcb8b
+blue = #81a1c1
+magenta = #b48ead
+cyan = #88c0d0
+white = #e5e9f0
+bright_black = #4c566a
+bright_red = #bf616a
+bright_green = #a3be8c
+bright_yellow = #ebcb8b
+bright_blue = #81a1c1
+bright_magenta = #b48ead
+bright_cyan = #8fbcbb
+bright_white = #eceff4
+```
+
+### Gruvbox Dark
+
+```txt
+theme = termy
+
+[colors]
+foreground = #ebdbb2
+background = #282828
+cursor = #ebdbb2
+black = #282828
+red = #cc241d
+green = #98971a
+yellow = #d79921
+blue = #458588
+magenta = #b16286
+cyan = #689d6a
+white = #a89984
+bright_black = #928374
+bright_red = #fb4934
+bright_green = #b8bb26
+bright_yellow = #fabd2f
+bright_blue = #83a598
+bright_magenta = #d3869b
+bright_cyan = #8ec07c
+bright_white = #ebdbb2
+```

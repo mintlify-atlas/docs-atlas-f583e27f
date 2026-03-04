@@ -1,0 +1,248 @@
+---
+title: Tmux Integration
+description: Native tmux support with pane management, session persistence, and split layouts
+---
+
+Termy provides deep integration with tmux, allowing you to use tmux's powerful window and pane management features directly within Termy's GPU-accelerated interface.
+
+## Overview
+
+Termy can run in tmux mode, where it acts as a tmux client with a native UI for:
+
+- Multiple panes within a single window
+- Session persistence and management
+- Detach/attach workflow
+- Window and pane navigation
+
+<Note>
+Tmux integration is available on macOS and Linux. It is not supported on Windows.
+</Note>
+
+## Configuration
+
+Tmux integration is configured through the `termy_config_core` settings:
+
+```rust
+// Default tmux settings
+tmux_enabled: DEFAULT_TMUX_ENABLED,           // false by default
+tmux_persistence: DEFAULT_TMUX_PERSISTENCE,   // session persistence
+tmux_binary: DEFAULT_TMUX_BINARY,             // "tmux" by default
+```
+
+### Enabling Tmux Mode
+
+Set `tmux_enabled: true` in your configuration to launch Termy with tmux integration.
+
+### Persistence Options
+
+Termy supports different tmux persistence modes:
+
+- **Session Persistence**: Tmux sessions survive app restarts
+- **Detach on Quit**: Sessions can be detached rather than killed
+
+## Pane Management
+
+### Splitting Panes
+
+Termy provides commands for creating tmux splits:
+
+- `SplitPaneVertical` - Split the current pane vertically (creates a pane to the right)
+- `SplitPaneHorizontal` - Split the current pane horizontally (creates a pane below)
+
+**Default Keybindings:**
+- Vertical split: Typically bound to a key combination
+- Horizontal split: Typically bound to a key combination
+
+### Navigation
+
+Move between panes using directional commands:
+
+- `FocusPaneLeft` - Move focus to the pane on the left
+- `FocusPaneRight` - Move focus to the pane on the right
+- `FocusPaneUp` - Move focus to the pane above
+- `FocusPaneDown` - Move focus to the pane below
+- `FocusPaneNext` - Cycle to the next pane
+- `FocusPanePrevious` - Cycle to the previous pane
+
+### Resizing
+
+Adjust pane sizes with resize commands:
+
+- `ResizePaneLeft` - Decrease width
+- `ResizePaneRight` - Increase width
+- `ResizePaneUp` - Decrease height
+- `ResizePaneDown` - Increase height
+
+### Zoom
+
+Toggle pane zoom to maximize a single pane:
+
+```
+TogglePaneZoom
+```
+
+This temporarily makes the current pane fill the entire window.
+
+## Session Management
+
+Termy provides a dedicated session manager accessible via the command palette:
+
+```
+ManageTmuxSessions
+```
+
+This opens a UI for:
+
+- Viewing active tmux sessions
+- Creating new sessions
+- Attaching to existing sessions
+- Switching between sessions
+
+### Session Lifecycle
+
+When tmux mode is enabled:
+
+1. **Launch**: Termy connects to or creates a tmux session
+2. **Runtime**: All tabs and panes are managed by tmux
+3. **Detach**: Sessions can be detached without killing processes
+4. **Reattach**: Sessions persist and can be reattached later
+
+## Implementation Details
+
+Termy's tmux integration is implemented in several crates:
+
+### Terminal UI Client
+
+Location: `crates/terminal_ui/src/tmux/`
+
+- `client.rs` - Tmux client implementation
+- `control/` - Tmux control mode protocol parser
+- `session.rs` - Session management
+- `snapshot.rs` - State snapshot handling
+
+### View Integration
+
+Location: `src/terminal_view/runtime/tmux/`
+
+- `mod.rs` - Tmux runtime state management
+- `events.rs` - Event handling from tmux
+- `actions.rs` - User actions (split, focus, resize)
+- `snapshot.rs` - Synchronizing tmux state with UI
+
+### Control Mode Protocol
+
+Termy uses tmux's control mode (`tmux -CC`) to communicate:
+
+```rust
+// From crates/terminal_ui/src/tmux/control/
+control/
+├── parser.rs     // Parse tmux control protocol
+├── worker.rs     // Background event processing
+├── coalescer.rs  // Event batching
+└── channel.rs    // Communication channel
+```
+
+<Tip>
+Tmux control mode provides structured output that Termy parses to keep the UI in sync with tmux state.
+</Tip>
+
+## Active Pane Border
+
+When tmux mode is active, Termy can display a border around the focused pane:
+
+```rust
+DEFAULT_TMUX_SHOW_ACTIVE_PANE_BORDER  // Configurable
+```
+
+This provides visual feedback about which pane has focus.
+
+## Pane Focus Strength
+
+Termy supports dimming inactive panes to highlight the active one:
+
+```rust
+DEFAULT_PANE_FOCUS_STRENGTH  // Controls opacity of inactive panes
+```
+
+## Commands Reference
+
+All tmux-related commands from `src/commands.rs`:
+
+| Command | Description | Menu Location |
+|---------|-------------|---------------|
+| `ManageTmuxSessions` | Open session manager | File > Tmux Sessions |
+| `SplitPaneVertical` | Split pane right | File > Split Pane Vertical |
+| `SplitPaneHorizontal` | Split pane down | File > Split Pane Horizontal |
+| `ClosePane` | Close current pane | - |
+| `FocusPaneLeft` | Focus left pane | - |
+| `FocusPaneRight` | Focus right pane | - |
+| `FocusPaneUp` | Focus upper pane | - |
+| `FocusPaneDown` | Focus lower pane | - |
+| `FocusPaneNext` | Focus next pane | File > Focus Next Pane |
+| `FocusPanePrevious` | Focus previous pane | - |
+| `ResizePaneLeft` | Resize left | - |
+| `ResizePaneRight` | Resize right | - |
+| `ResizePaneUp` | Resize up | - |
+| `ResizePaneDown` | Resize down | - |
+| `TogglePaneZoom` | Toggle zoom | View > Toggle Pane Zoom |
+
+<Warning>
+All tmux commands are only available when tmux mode is enabled. They are hidden from the command palette and menus on Windows.
+</Warning>
+
+## Best Practices
+
+### Session Naming
+
+Use descriptive session names to organize your workflows:
+
+```bash
+tmux new-session -s development
+tmux new-session -s monitoring
+```
+
+### Persistence Strategy
+
+Enable tmux persistence to preserve sessions across:
+- App restarts
+- System reboots (with tmux-resurrect plugin)
+- Network disconnections (when using tmux over SSH)
+
+### Pane Layout
+
+Plan your pane layout based on your workflow:
+
+- **Development**: Editor | Terminal | Logs
+- **Monitoring**: Logs | Metrics | Shell
+- **Operations**: Multiple SSH sessions in split panes
+
+## Troubleshooting
+
+### Tmux Not Found
+
+If Termy can't find tmux:
+
+1. Install tmux: `brew install tmux` (macOS) or `apt install tmux` (Linux)
+2. Verify tmux is in PATH: `which tmux`
+3. Configure custom tmux binary path if needed
+
+### Pane Rendering Issues
+
+If panes appear degraded or out of sync:
+
+- Termy will show a warning: "tmux pane restore degraded for N pane(s)"
+- This typically occurs during rapid pane creation/destruction
+- The UI will automatically resync on the next tmux event
+
+### Session Conflicts
+
+If you have session attachment conflicts:
+
+- Detach other clients: `tmux detach-client -a`
+- Use unique session names
+- Check for zombie tmux processes
+
+## Related
+
+- [Configuration](/configuration/overview) - Configure tmux settings
+- [Keyboard Shortcuts](/configuration/keybindings) - Pane navigation keybindings

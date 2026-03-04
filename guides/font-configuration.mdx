@@ -1,0 +1,516 @@
+---
+title: "Font Configuration"
+description: "Configure fonts in Termy using the CLI font listing tool, set font family and size, and optimize font rendering for the best terminal experience"
+---
+
+Termy provides flexible font configuration with support for any monospace font installed on your system. This guide covers font discovery, configuration, and optimization.
+
+## Finding Available Fonts
+
+Termy includes a CLI tool to list all monospace fonts available on your system.
+
+### Using the Font Listing Tool
+
+<Steps>
+  <Step title="Run the Font List Command">
+    Open Termy and run:
+    
+    ```bash
+    termy list-fonts
+    ```
+  </Step>
+  
+  <Step title="Browse Available Fonts">
+    The command outputs all monospace fonts detected on your system:
+    
+    ```
+    JetBrains Mono
+    Fira Code
+    Source Code Pro
+    Cascadia Code
+    IBM Plex Mono
+    DejaVu Sans Mono
+    ...
+    ```
+  </Step>
+  
+  <Step title="Choose Your Font">
+    Note the exact name of the font you want to use
+  </Step>
+</Steps>
+
+### Platform-Specific Font Discovery
+
+**macOS:**
+Termy queries the system font database for monospace fonts
+
+**Linux:**
+Termy uses `fc-list` (fontconfig) to enumerate fonts:
+
+```bash
+fc-list :spacing=mono -f "%{family}\n"
+```
+
+**Windows:**
+Termy provides a curated list of common monospace fonts
+
+<Note>
+  If `termy list-fonts` shows no output, the CLI may not be installed. Install it via Termy's settings or use manual font names.
+</Note>
+
+## Configuring Font Family
+
+<Steps>
+  <Step title="Open Configuration">
+    Edit `~/.config/termy/config.txt`
+  </Step>
+  
+  <Step title="Set Font Family">
+    Update the `font_family` setting:
+    
+    ```txt
+    font_family = JetBrains Mono
+    ```
+  </Step>
+  
+  <Step title="Restart Termy">
+    Relaunch Termy to apply the new font
+  </Step>
+</Steps>
+
+### Font Name Requirements
+
+- Use the **exact font family name** as shown by `termy list-fonts`
+- Font names are case-sensitive
+- Include spaces if present in the font name
+- Don't include style suffixes like "Regular" or "Bold"
+
+**Correct:**
+```txt
+font_family = JetBrains Mono
+font_family = Fira Code
+font_family = Source Code Pro
+```
+
+**Incorrect:**
+```txt
+font_family = jetbrains-mono          # Wrong case
+font_family = JetBrains Mono Regular  # Includes style
+font_family = "JetBrains Mono"        # Don't quote
+```
+
+## Configuring Font Size
+
+Set the font size in pixels:
+
+```txt
+font_size = 14
+```
+
+### Recommended Sizes
+
+| Display Type | Recommended Size |
+|--------------|------------------|
+| Laptop (13-15") | 12-14px |
+| Desktop (24") | 14-16px |
+| 4K Display | 18-24px |
+| Retina Display | 14-16px (scales automatically) |
+
+### Testing Different Sizes
+
+Quickly test sizes by editing config and restarting:
+
+```txt
+# Try different values
+font_size = 12  # Smaller, more compact
+font_size = 14  # Default, balanced
+font_size = 16  # Larger, easier to read
+font_size = 18  # Presentation mode
+```
+
+<Note>
+  Font size is specified in pixels, not points. This ensures consistent rendering across different display densities.
+</Note>
+
+## Font Rendering Options
+
+Termy handles font rendering automatically, but you can optimize appearance:
+
+### Padding Adjustments
+
+Adjust padding to optimize spacing around text:
+
+```txt
+# Horizontal padding (left/right)
+padding_x = 12
+
+# Vertical padding (top/bottom)
+padding_y = 8
+```
+
+Larger fonts may benefit from increased padding:
+
+```txt
+# For font_size = 18
+padding_x = 16
+padding_y = 12
+```
+
+### Line Height
+
+Termy automatically calculates line height based on font metrics. If lines feel cramped:
+
+- Try a different font with better vertical spacing
+- Increase `padding_y` for more breathing room
+- Use fonts designed for terminal use (see recommendations below)
+
+## Recommended Fonts
+
+### Best Overall
+
+**JetBrains Mono** (default)
+- Designed specifically for coding
+- Excellent ligature support
+- Clear distinction between similar characters (0/O, 1/l/I)
+- Free and open-source
+
+**Download:** [jetbrains.com/lp/mono](https://www.jetbrains.com/lp/mono/)
+
+### Ligature Fonts
+
+**Fira Code**
+- Beautiful ligatures for common code symbols (=>, !=, >=)
+- Based on Fira Mono with added ligatures
+- Great for modern programming languages
+
+**Cascadia Code**
+- Microsoft's font with ligatures
+- Cursive italic variant available
+- Excellent Windows integration
+
+<Warning>
+  Ligature support depends on the font. Termy renders ligatures if the font provides them, but not all fonts include ligatures.
+</Warning>
+
+### Classic Monospace
+
+**Source Code Pro**
+- Adobe's clean, professional font
+- No ligatures (if you prefer plain characters)
+- Excellent readability
+
+**DejaVu Sans Mono**
+- Default on many Linux systems
+- Wide character support
+- Unicode coverage
+
+**Hack**
+- Optimized for source code
+- Clear at small sizes
+- Powerline symbols included
+
+### Retro/Alternative
+
+**IBM Plex Mono**
+- Modern take on IBM's classic terminal font
+- Professional appearance
+- Multiple weights available
+
+**Inconsolata**
+- Compact and efficient
+- Good for smaller displays
+- Clean, minimalist design
+
+## Installing New Fonts
+
+### macOS
+
+<Steps>
+  <Step title="Download Font">
+    Download the font file (usually `.ttf` or `.otf`)
+  </Step>
+  
+  <Step title="Install via Font Book">
+    Double-click the font file and click "Install Font"
+    
+    Or manually:
+    ```bash
+    cp ~/Downloads/FontName.ttf ~/Library/Fonts/
+    ```
+  </Step>
+  
+  <Step title="Restart Termy">
+    Termy will detect the new font on next launch
+  </Step>
+</Steps>
+
+### Linux
+
+<Steps>
+  <Step title="Download Font">
+    Download the font file
+  </Step>
+  
+  <Step title="Install System-Wide or User-Only">
+    System-wide:
+    ```bash
+    sudo cp FontName.ttf /usr/share/fonts/truetype/
+    sudo fc-cache -f -v
+    ```
+    
+    User-only:
+    ```bash
+    mkdir -p ~/.local/share/fonts
+    cp FontName.ttf ~/.local/share/fonts/
+    fc-cache -f -v
+    ```
+  </Step>
+  
+  <Step title="Verify Installation">
+    ```bash
+    fc-list | grep "FontName"
+    ```
+  </Step>
+  
+  <Step title="Update Termy Config">
+    ```txt
+    font_family = FontName
+    ```
+  </Step>
+</Steps>
+
+### Windows
+
+<Steps>
+  <Step title="Download Font">
+    Download the font file
+  </Step>
+  
+  <Step title="Install Font">
+    Right-click the font file and select "Install" or "Install for all users"
+  </Step>
+  
+  <Step title="Restart Termy">
+    Launch Termy and update config
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Font Not Found
+
+**Symptom:** Termy falls back to a different font
+
+**Solutions:**
+
+1. **Verify exact font name:**
+   ```bash
+   termy list-fonts | grep -i "jetbrains"
+   ```
+
+2. **Check font installation:**
+   ```bash
+   # macOS
+   ls ~/Library/Fonts/ | grep -i "jetbrains"
+   
+   # Linux
+   fc-list | grep -i "jetbrains"
+   ```
+
+3. **Ensure font is monospace:**
+   Termy requires monospace fonts. Proportional fonts won't work correctly.
+
+### Blurry or Pixelated Text
+
+**macOS:**
+- Check System Preferences > Displays > Resolution
+- Ensure "Default for display" or "Scaled" is selected
+- Termy handles retina scaling automatically
+
+**Linux:**
+- Verify fontconfig antialiasing:
+  ```bash
+  cat ~/.config/fontconfig/fonts.conf
+  ```
+- Enable antialiasing if disabled
+
+**Windows:**
+- Check ClearType settings
+- Ensure display scaling is set correctly
+
+### Characters Not Aligned
+
+**Symptom:** Box drawing characters or Unicode symbols misaligned
+
+**Cause:** Font doesn't include those characters or has inconsistent metrics
+
+**Solution:**
+- Use a font with comprehensive Unicode coverage (DejaVu Sans Mono, JetBrains Mono)
+- Test character support:
+  ```bash
+  echo "┌─┐│└┘├┤┬┴┼"
+  echo "→ ← ↑ ↓ ✓ ✗"
+  ```
+
+### Ligatures Not Working
+
+**Symptom:** Code symbols like `=>` don't combine
+
+**Check:**
+1. Font supports ligatures (Fira Code, Cascadia Code, JetBrains Mono)
+2. Font is correctly installed
+3. Font name exactly matches installed font
+
+<Note>
+  Termy automatically enables ligatures for fonts that support them. There's no separate configuration needed.
+</Note>
+
+### Font Size Too Large/Small After Update
+
+If font size seems off after changing fonts:
+
+1. Different fonts render at different visual sizes even with the same pixel size
+2. Adjust `font_size` up or down by 1-2px
+3. Test with sample code to find optimal size
+
+## Advanced Configuration
+
+### Font Fallback
+
+If your primary font doesn't include certain Unicode characters, the system uses fallback fonts automatically.
+
+Example: Using Nerd Font symbols with JetBrains Mono:
+- JetBrains Mono handles ASCII and common Unicode
+- System falls back to Nerd Font for symbols like ``, ``
+
+### Font Features
+
+Some fonts support OpenType features. Termy enables standard features automatically:
+
+- **Ligatures** (`liga`, `calt`): Automatically enabled
+- **Kerning** (`kern`): Automatically applied
+- **Stylistic sets**: Not configurable (uses font defaults)
+
+### Font Rendering Performance
+
+Font rendering is optimized automatically, but for best performance:
+
+- Use fonts with good hinting (JetBrains Mono, Source Code Pro)
+- Avoid extremely large font sizes (>30px)
+- Consider system font cache on Linux:
+  ```bash
+  fc-cache -f -v
+  ```
+
+## Testing Your Font Configuration
+
+Verify your font looks good with real content:
+
+```bash
+# Test character differentiation
+echo "0O 1lI S5 2Z 8B 6b"
+
+# Test ligatures (if supported)
+echo "=> != >= <= -> <-"
+
+# Test box drawing
+echo "┌─┬─┐"
+echo "│ │ │"
+echo "├─┼─┤"
+echo "│ │ │"
+echo "└─┴─┘"
+
+# Test Unicode symbols
+echo "✓ ✗ → ← ↑ ↓ ★ ☆"
+
+# Test code syntax
+cat > test.js <<EOF
+const fn = () => {
+  return x >= 5 && y !== null;
+};
+EOF
+cat test.js
+```
+
+## Best Practices
+
+### 1. Match Font to Task
+
+- **Coding:** JetBrains Mono, Fira Code (ligatures)
+- **Logs/Reading:** Source Code Pro, IBM Plex Mono
+- **Retro/Fun:** Inconsolata, Hack
+
+### 2. Consistent Sizing Across Displays
+
+Use different configs for different displays:
+
+```txt
+# Laptop config
+font_size = 13
+
+# External 4K monitor config  
+font_size = 16
+```
+
+### 3. Pair Fonts with Themes
+
+Some fonts look better with certain color schemes:
+
+- **Light themes:** Use slightly larger font size for comfort
+- **Dark themes:** Standard size works well
+
+### 4. Test Before Committing
+
+Spend a day with a new font before deciding. Initial impressions can be misleading.
+
+## Example Configurations
+
+### Developer Setup
+
+```txt
+font_family = JetBrains Mono
+font_size = 14
+padding_x = 12
+padding_y = 8
+theme = tokyo-night-dark
+```
+
+### Presentation Mode
+
+```txt
+font_family = JetBrains Mono
+font_size = 20
+padding_x = 20
+padding_y = 16
+theme = clean-dark
+```
+
+### Compact/Dense Layout
+
+```txt
+font_family = Inconsolata
+font_size = 12
+padding_x = 8
+padding_y = 6
+theme = termy
+```
+
+### Accessibility (High Contrast)
+
+```txt
+font_family = Source Code Pro
+font_size = 16
+padding_x = 16
+padding_y = 12
+theme = custom-high-contrast
+
+[colors]
+foreground = #ffffff
+background = #000000
+```
+
+## Next Steps
+
+- Pair your font with [Custom Themes](/guides/custom-themes) for a complete visual experience
+- Configure [Shell Integration](/guides/shell-integration) for enhanced workflow
+- Set up [Tmux Integration](/guides/tmux-setup) for advanced terminal multiplexing

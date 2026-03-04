@@ -1,0 +1,578 @@
+---
+title: 'Configuration Management'
+description: 'Edit, validate, and manage your Termy configuration'
+---
+
+Termy provides CLI commands to manage your configuration file efficiently.
+
+## Show Config
+
+Display your current configuration settings.
+
+### Usage
+
+```bash
+termy-cli -show-config
+```
+
+### What It Does
+
+This command:
+1. Locates your configuration file
+2. Reads its contents (or shows defaults if it doesn't exist)
+3. Displays the configuration
+
+### Example Output
+
+<CodeGroup>
+```toml Existing Config
+Config file: /Users/username/.config/termy/config
+
+theme = "nord"
+font = "JetBrains Mono"
+font_size = 14
+cursor_blink = true
+background_blur = 10
+tmux_enabled = false
+
+keybind = secondary-t=new_tab
+keybind = secondary-w=close_tab
+keybind = control-shift-c=copy
+keybind = control-shift-v=paste
+```
+
+```toml No Config File
+Config file: /Users/username/.config/termy/config
+
+(not created yet - using defaults)
+
+theme = "termy"
+font_size = 13
+cursor_blink = true
+background_blur = 0
+tmux_enabled = false
+# ... default configuration template
+```
+</CodeGroup>
+
+### Use Cases
+
+#### Quick Reference
+
+Check your current settings without opening an editor:
+
+```bash
+termy-cli -show-config
+```
+
+#### Find Specific Setting
+
+<CodeGroup>
+```bash Check Theme
+termy-cli -show-config | grep "theme"
+```
+
+```bash Check Font Size
+termy-cli -show-config | grep "font_size"
+```
+</CodeGroup>
+
+#### Export Configuration
+
+Save your config for backup or sharing:
+
+```bash
+termy-cli -show-config > my-termy-config.txt
+```
+
+---
+
+## Edit Config
+
+Open your configuration file in your preferred editor.
+
+### Usage
+
+```bash
+termy-cli -edit-config
+```
+
+### What It Does
+
+This command:
+1. Locates (or creates) your configuration file
+2. Opens it in your editor
+3. Creates the config directory if needed
+
+### Editor Selection
+
+The command uses the following priority:
+
+<Steps>
+  <Step title="$EDITOR environment variable">
+    If set, uses your preferred editor:
+    ```bash
+    export EDITOR=vim
+    termy-cli -edit-config
+    ```
+  </Step>
+  
+  <Step title="Platform-specific fallback">
+    If `$EDITOR` is not set or fails:
+    
+    - **macOS**: `open -t` (TextEdit)
+    - **Linux**: `xdg-open`, then tries `nano`, `vim`, `vi`
+    - **Windows**: `notepad`
+  </Step>
+</Steps>
+
+### Example Session
+
+<CodeGroup>
+```bash Open Config
+termy-cli -edit-config
+```
+
+```bash Output
+Opening /Users/username/.config/termy/config
+```
+</CodeGroup>
+
+Your editor opens with the configuration file:
+
+```toml
+# Termy Configuration
+
+theme = "nord"
+font = "JetBrains Mono"
+font_size = 14
+cursor_blink = true
+background_blur = 10
+tmux_enabled = false
+
+keybind = secondary-t=new_tab
+keybind = secondary-w=close_tab
+```
+
+### Use Cases
+
+#### Quick Edit
+
+```bash
+termy-cli -edit-config
+```
+
+#### Set Preferred Editor
+
+<CodeGroup>
+```bash Use VS Code
+export EDITOR="code --wait"
+termy-cli -edit-config
+```
+
+```bash Use Neovim
+export EDITOR=nvim
+termy-cli -edit-config
+```
+
+```bash Use Nano
+export EDITOR=nano
+termy-cli -edit-config
+```
+</CodeGroup>
+
+<Tip>
+Add `export EDITOR=your-editor` to your shell profile (`~/.bashrc`, `~/.zshrc`) to make it permanent.
+</Tip>
+
+#### Edit-Validate Workflow
+
+<CodeGroup>
+```bash Recommended Workflow
+# Edit configuration
+termy-cli -edit-config
+
+# Validate changes
+termy-cli -validate-config
+
+# If valid, restart Termy to apply
+```
+</CodeGroup>
+
+---
+
+## Validate Config
+
+Check your configuration file for errors and warnings.
+
+### Usage
+
+```bash
+termy-cli -validate-config
+```
+
+### What It Does
+
+This command:
+1. Reads your configuration file
+2. Parses and validates syntax
+3. Checks for invalid values
+4. Detects tmux-related issues
+5. Reports errors and warnings
+
+### Exit Codes
+
+- **0**: Configuration is valid
+- **1**: Configuration has errors
+
+### Example Output
+
+<Tabs>
+  <Tab title="Valid Config">
+    ```
+    Config file: /Users/username/.config/termy/config
+    Status: Valid
+    ```
+  </Tab>
+  
+  <Tab title="Config with Warnings">
+    ```
+    Config file: /Users/username/.config/termy/config
+    
+    Warnings:
+      Line 12: keybind action 'resize_pane_left' requires tmux_enabled=true (restart required)
+      Line 13: keybind action 'resize_pane_right' requires tmux_enabled=true (restart required)
+    
+    Result: Valid (with warnings)
+    ```
+  </Tab>
+  
+  <Tab title="Invalid Config">
+    ```
+    Config file: /Users/username/.config/termy/config
+    
+    Errors:
+      Line 3: font_size must be a positive number
+      Line 7: Invalid boolean value for cursor_blink
+    
+    Warnings:
+      Line 2: Unknown root key: font_famly (typo?)
+    
+    Result: Invalid
+    ```
+  </Tab>
+  
+  <Tab title="No Config File">
+    ```
+    Config file: /Users/username/.config/termy/config
+    Status: File does not exist (using defaults)
+    Result: Valid
+    ```
+  </Tab>
+</Tabs>
+
+### Validation Checks
+
+#### Errors (Must Fix)
+
+<AccordionGroup>
+  <Accordion title="Invalid Syntax">
+    - Malformed TOML syntax
+    - Missing equals signs
+    - Unclosed quotes
+    
+    ```toml
+    # ❌ Error
+    font = JetBrains Mono  # Missing quotes
+    
+    # ✅ Correct
+    font = "JetBrains Mono"
+    ```
+  </Accordion>
+  
+  <Accordion title="Invalid Values">
+    - Font size not a positive number
+    - Invalid color hex codes
+    - Unrecognized boolean values
+    
+    ```toml
+    # ❌ Error
+    font_size = 0
+    font_size = -5
+    cursor_blink = maybe
+    
+    # ✅ Correct
+    font_size = 14
+    cursor_blink = true
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### Warnings (Should Review)
+
+<AccordionGroup>
+  <Accordion title="Unknown Keys">
+    - Typos in configuration keys
+    - Deprecated options
+    
+    ```toml
+    # ⚠️ Warning
+    font_famly = "Monaco"  # Typo: should be font_family
+    
+    # ✅ Correct
+    font = "Monaco"
+    ```
+  </Accordion>
+  
+  <Accordion title="Tmux Keybind Issues">
+    - Tmux-only actions when `tmux_enabled = false`
+    
+    ```toml
+    # ⚠️ Warning when tmux_enabled = false
+    keybind = secondary-alt-left=resize_pane_left
+    
+    # ✅ Enable tmux to use pane commands
+    tmux_enabled = true
+    keybind = secondary-alt-left=resize_pane_left
+    ```
+  </Accordion>
+  
+  <Accordion title="Unknown Sections">
+    - Unrecognized `[section]` headers
+    
+    ```toml
+    # ⚠️ Warning
+    [unknown_section]
+    key = value
+    
+    # ✅ Use recognized sections
+    [colors]
+    foreground = "#ffffff"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Use Cases
+
+#### Pre-Restart Validation
+
+Always validate before restarting Termy:
+
+```bash
+termy-cli -edit-config
+# ... make changes ...
+termy-cli -validate-config
+```
+
+#### CI/CD Integration
+
+Use in scripts with exit code checking:
+
+<CodeGroup>
+```bash Validation Script
+#!/bin/bash
+termy-cli -validate-config
+if [ $? -eq 0 ]; then
+  echo "✅ Configuration is valid"
+  # Deploy or apply config
+else
+  echo "❌ Configuration has errors"
+  exit 1
+fi
+```
+</CodeGroup>
+
+#### Continuous Validation
+
+Watch for changes and auto-validate:
+
+<CodeGroup>
+```bash Watch Config (Linux/macOS)
+#!/bin/bash
+while true; do
+  inotifywait -e modify ~/.config/termy/config
+  termy-cli -validate-config
+done
+```
+</CodeGroup>
+
+---
+
+## Prettify Config
+
+Reformat and clean up your configuration file.
+
+### Usage
+
+```bash
+termy-cli -prettify-config
+```
+
+### What It Does
+
+This command:
+1. Reads your configuration file
+2. Removes comments
+3. Normalizes formatting
+4. Writes the cleaned version back
+5. Displays the result
+
+<Warning>
+**Destructive Operation**: This command removes all comments from your config file. Make a backup if you want to preserve comments.
+</Warning>
+
+### Example
+
+<Tabs>
+  <Tab title="Before">
+    ```toml
+    # My custom theme
+    theme = "nord"  # I love this theme
+    
+    # Font settings
+    font = "JetBrains Mono"
+    font_size = 14  # Perfect size for my screen
+    
+    cursor_blink = true
+    
+    # Keybindings
+    keybind = secondary-t=new_tab  # Open new tab
+    ```
+  </Tab>
+  
+  <Tab title="After">
+    ```toml
+    theme = "nord"
+    font = "JetBrains Mono"
+    font_size = 14
+    cursor_blink = true
+    keybind = secondary-t=new_tab
+    ```
+  </Tab>
+</Tabs>
+
+### When to Use
+
+<AccordionGroup>
+  <Accordion title="Cleaning up messy configs">
+    After extensive editing, prettify for consistency:
+    
+    ```bash
+    termy-cli -prettify-config
+    ```
+  </Accordion>
+  
+  <Accordion title="Preparing for version control">
+    Normalize formatting before committing:
+    
+    ```bash
+    termy-cli -prettify-config
+    git add ~/.config/termy/config
+    git commit -m "Update Termy config"
+    ```
+  </Accordion>
+  
+  <Accordion title="Removing old comments">
+    Clean up after experimentation:
+    
+    ```bash
+    # Backup first!
+    cp ~/.config/termy/config ~/.config/termy/config.backup
+    termy-cli -prettify-config
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Backup Before Prettify
+
+<CodeGroup>
+```bash Safe Prettify Workflow
+# Create backup
+cp ~/.config/termy/config ~/.config/termy/config.backup
+
+# Prettify
+termy-cli -prettify-config
+
+# If you need to restore
+# cp ~/.config/termy/config.backup ~/.config/termy/config
+```
+</CodeGroup>
+
+---
+
+## Configuration File Location
+
+All commands operate on your Termy configuration file:
+
+<Tabs>
+  <Tab title="macOS">
+    ```
+    ~/.config/termy/config
+    ```
+  </Tab>
+  
+  <Tab title="Linux">
+    ```
+    ~/.config/termy/config
+    ```
+  </Tab>
+  
+  <Tab title="Windows">
+    ```
+    %APPDATA%\termy\config
+    ```
+  </Tab>
+</Tabs>
+
+## Complete Workflow Example
+
+<Steps>
+  <Step title="View current configuration">
+    ```bash
+    termy-cli -show-config
+    ```
+  </Step>
+  
+  <Step title="Edit configuration">
+    ```bash
+    termy-cli -edit-config
+    ```
+    
+    Make your changes...
+  </Step>
+  
+  <Step title="Validate changes">
+    ```bash
+    termy-cli -validate-config
+    ```
+  </Step>
+  
+  <Step title="(Optional) Prettify">
+    ```bash
+    # Backup first!
+    cp ~/.config/termy/config ~/.config/termy/config.backup
+    termy-cli -prettify-config
+    ```
+  </Step>
+  
+  <Step title="Restart Termy">
+    Restart Termy to apply your changes.
+  </Step>
+</Steps>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="List Fonts" icon="font" href="/cli/list-fonts">
+    Discover available fonts
+  </Card>
+  <Card title="List Themes" icon="palette" href="/cli/list-themes">
+    Browse color themes
+  </Card>
+  <Card title="List Keybinds" icon="keyboard" href="/cli/list-keybinds">
+    View keyboard shortcuts
+  </Card>
+  <Card title="Configuration Guide" icon="book" href="/configuration/overview">
+    Full configuration reference
+  </Card>
+</CardGroup>

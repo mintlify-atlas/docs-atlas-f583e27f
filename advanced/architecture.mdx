@@ -1,0 +1,339 @@
+---
+title: Architecture
+description: Understanding Termy's codebase structure and design
+---
+
+Termy is built as a Rust workspace with modular crates that maintain clear boundaries and responsibilities. This architecture enables maintainability, testability, and clean separation of concerns.
+
+## Workspace Structure
+
+The project is organized as a Cargo workspace with the main `termy` binary and 15 supporting crates:
+
+```
+termy/
+├── src/                    # Main application (GPUI integration)
+├── crates/
+│   ├── terminal_ui/        # Terminal rendering & emulation
+│   ├── config_core/        # Configuration domain logic
+│   ├── command_core/       # Command & keybind engine
+│   ├── theme_core/         # Theme data structures
+│   ├── themes/             # Built-in themes
+│   ├── search/             # Terminal search functionality
+│   ├── auto_update/        # Update check & download
+│   ├── auto_update_ui/     # Update UI components
+│   ├── toast_sdk/          # Toast notification system
+│   ├── native_sdk/         # Platform-specific APIs
+│   ├── cli/                # CLI tool (termy-cli)
+│   ├── cli_install_core/   # CLI installation logic
+│   ├── release_core/       # Release metadata & versioning
+│   ├── openai/             # OpenAI API client
+│   ├── gemini/             # Gemini API client
+│   └── xtask/              # Build automation tasks
+└── Cargo.toml              # Workspace manifest
+```
+
+## Core Components
+
+### Main Application (`src/`)
+
+The root package integrates GPUI (the UI framework from Zed) with Termy's terminal functionality:
+
+- **main.rs**: Application entry point, window setup, lifecycle management
+- **terminal_view/**: GPUI-based terminal view rendering
+- **commands.rs**: Application command handlers
+- **menus.rs**: Platform menus (File, Edit, View, etc.)
+- **settings_view/**: Settings UI
+- **config/**: Configuration loading and parsing
+- **keybindings/**: Keybind registration and handling
+
+**Key dependencies**: GPUI, alacritty_terminal, workspace crates
+
+### Terminal UI (`termy_terminal_ui`)
+
+Core terminal emulation and rendering logic, UI-framework agnostic:
+
+- **runtime.rs**: Terminal process management, PTY handling
+- **grid.rs**: Cell-based grid rendering with paint cache optimization
+- **pane_terminal.rs**: Pane abstraction for terminal instances
+- **tmux/**: tmux integration (session/window/pane management)
+- **links.rs**: URL/path detection and classification
+- **render_metrics.rs**: Debug-only performance metrics
+
+**Key exports**: `Terminal`, `PaneTerminal`, `TmuxClient`, `TerminalGrid`
+
+### Command Core (`termy_command_core`)
+
+Pure domain crate for command and keybind behavior:
+
+- Command ID definitions and normalization
+- Default keybind configuration
+- Keybind directive parsing (`clear`, bind, unbind)
+- Deterministic keybind resolution
+
+**Critical boundary**: Must NOT depend on `gpui` or `termy_config_core`. See [Command Boundary](/advanced/architecture#command-boundary) below.
+
+### Config Core (`termy_config_core`)
+
+Configuration data structures and parsing logic:
+
+- Configuration schema definitions
+- Theme integration (depends on `termy_theme_core`)
+- Config validation and defaults
+
+**Dependencies**: `termy_theme_core` only
+
+### Theme System
+
+**termy_theme_core**: Pure theme data structures (no dependencies)
+
+**termy_themes**: Built-in theme collection (depends on `termy_theme_core`)
+
+Themes define terminal colors, UI colors, and visual appearance. The separation allows theme definitions to be used across both the main app and CLI tools.
+
+### CLI Tools
+
+**termy_cli**: Standalone `termy-cli` binary for:
+- Configuration validation and migration
+- Keybind inspection
+- Theme preview (TUI-based)
+- Font listing
+- Installation management
+
+**termy_cli_install_core**: Cross-platform CLI installation logic (shell integration, PATH setup)
+
+**Boundary**: CLI crates must NOT depend on GPUI (enforced by CI)
+
+### Auto-Update System
+
+**termy_auto_update**: Background update checking and binary download
+
+**termy_auto_update_ui**: GPUI-based update notification UI
+
+**termy_release_core**: Release metadata types and version comparison
+
+### AI Integration
+
+**termy_openai**: OpenAI API client for AI features
+
+**termy_gemini**: Google Gemini API client
+
+These crates provide clean API abstractions with minimal dependencies.
+
+### Utilities
+
+**termy_search**: Terminal buffer search with regex support
+
+**termy_toast**: Toast notification SDK for GPUI
+
+**termy_native_sdk**: Platform-specific native APIs (macOS, Windows, Linux)
+
+**xtask**: Build automation (doc generation, validation)
+
+## Dependency Architecture
+
+### Layered Design
+
+```
+Application Layer:    termy (main binary)
+                      ↓
+UI Layer:             termy_terminal_ui, termy_auto_update_ui, termy_toast
+                      ↓
+Domain Layer:         termy_command_core, termy_config_core, termy_theme_core
+                      ↓
+Foundation Layer:     termy_search, termy_native_sdk, termy_openai, termy_gemini
+```
+
+### Command Boundary
+
+The command system enforces strict ownership boundaries:
+
+**`termy_command_core` owns:**
+- Command IDs and config-facing names
+- Command parsing and normalization
+- Default keybinds
+- Keybind directive parsing
+- Deterministic resolution order
+
+**App/CLI adapters own:**
+- UI labels and command palette presentation
+- Platform-specific visibility
+- Trigger canonicalization (e.g., GPUI keystroke parsing)
+
+**Integration pattern:**
+1. Adapters convert config keybinds to `KeybindLineRef`
+2. Adapters call `parse_keybind_directives_from_iter`
+3. Adapters call `resolve_keybinds` over `default_resolved_keybinds`
+
+This keeps one canonical command engine while preserving thin adapter code.
+
+**Forbidden dependencies** (enforced by CI):
+- `termy_command_core` → `gpui`
+- `termy_command_core` → `termy_config_core`
+- `termy_config_core` → `termy_themes`
+- `termy_cli*` → `gpui`
+
+See `/home/daytona/workspace/source/scripts/check-boundaries.sh` and `/home/daytona/workspace/source/docs/architecture/command-boundary.md` for details.
+
+## GPUI Integration
+
+Termy uses [GPUI](https://gpui.rs), the UI framework from [Zed](https://zed.dev), for:
+
+- Window management and platform integration
+- Reactive UI rendering
+- Event handling and actions
+- Menu and command palette
+- GPU-accelerated text rendering
+
+GPUI is sourced from the Zed repository:
+
+```toml
+gpui = { git = "https://github.com/zed-industries/zed", package = "gpui" }
+```
+
+The main application in `src/` bridges GPUI's component model with `termy_terminal_ui`'s terminal abstraction.
+
+## Terminal Emulation
+
+Termy uses [alacritty_terminal](https://github.com/alacritty/alacritty) for VT100/xterm emulation:
+
+```toml
+alacritty_terminal = { git = "https://github.com/alacritty/alacritty", rev = "4225cea..." }
+```
+
+The `termy_terminal_ui` crate wraps alacritty_terminal and provides:
+- PTY process spawning (Unix: rustix-openpty)
+- Grid-based rendering with dirty-span tracking
+- Cell-level paint cache optimization
+- Shell integration (tab titles, working directory)
+
+## Render Optimization
+
+The terminal renderer uses a multi-tiered caching strategy:
+
+- **Full rebuild**: Complete cell cache regeneration (avoided during cursor blink)
+- **Partial update**: Dirty-span patching for changed regions
+- **Reuse**: No cache update when terminal reports no damage
+
+See `termy_terminal_ui::render_metrics` for debug metrics.
+
+## Tmux Integration
+
+Termy has first-class tmux support via `termy_terminal_ui::tmux`:
+
+- Session/window/pane discovery
+- Split pane navigation
+- Tmux control mode protocol
+- Integration tests (requires tmux >= 3.3)
+
+Run tests with:
+
+```bash
+just test-tmux-integration
+```
+
+## Build System
+
+### Cargo Workspace
+
+The workspace uses Cargo's 2021 edition resolver:
+
+```toml
+[workspace]
+resolver = "2"
+members = [".", "crates/*"]
+```
+
+### Build Scripts
+
+**build.rs** handles platform-specific setup:
+
+- **macOS**: Detects SDK version >= 26 for feature flags
+- **Windows**: Embeds icon resource via `winresource`
+
+### Justfile Automation
+
+The `justfile` provides task runners:
+
+```bash
+just run              # Run in release mode
+just build            # Build release binary
+just check            # Check all crates
+just generate-icon    # Generate macOS .icns
+just build-dmg        # Build macOS DMG
+just build-setup      # Build Windows installer
+```
+
+See [Building from Source](/advanced/building) for details.
+
+## Testing Strategy
+
+### Unit Tests
+
+Each crate has its own test suite:
+
+```bash
+cargo test --workspace
+```
+
+### Integration Tests
+
+**Tmux integration**: End-to-end tmux split testing
+
+```bash
+just test-tmux-integration
+```
+
+Requires tmux >= 3.3 (set `TERMY_TEST_TMUX_BIN` to override binary).
+
+### Architecture Checks
+
+CI enforces dependency boundaries:
+
+```bash
+./scripts/check-boundaries.sh
+```
+
+Validates:
+- Forbidden dependencies
+- Generated documentation freshness (keybindings, config)
+
+## Documentation Generation
+
+The `xtask` crate auto-generates docs from code:
+
+```bash
+just generate-keybindings-doc  # Generate keybind reference
+just generate-config-doc       # Generate config reference
+```
+
+CI checks these are up-to-date:
+
+```bash
+just check-keybindings-doc
+just check-config-doc
+```
+
+## Platform-Specific Code
+
+### macOS
+
+- Core-text pinned to 21.0.0 (avoids core-graphics conflict)
+- DMG packaging with Finder layout
+- Code signing and notarization support
+
+### Windows
+
+- Icon embedding via winresource
+- Inno Setup-based installer
+- Windows subsystem for GUI app (`#![windows_subsystem = "windows"]`)
+
+### Linux
+
+- Unix PTY via rustix-openpty
+- Standard desktop integration
+
+## Next Steps
+
+- [Building from Source](/advanced/building) - Build Termy locally
+- [Contributing](/advanced/contributing) - Contribute to Termy
+- [Configuration](/configuration/overview) - Customize Termy's behavior

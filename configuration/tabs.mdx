@@ -1,0 +1,212 @@
+---
+title: Tab Configuration
+description: Configure tab titles, tab strip appearance, and tab behavior
+---
+
+Customize how Termy displays and manages tabs, including intelligent tab title detection and tab strip appearance.
+
+## Tab Title Behavior
+
+Termy includes a sophisticated tab title system that automatically updates based on shell activity.
+
+<ParamField path="tab_title_mode" type="string" default="smart">
+  How tab titles are determined:
+  - `smart` - Intelligently choose the best title source
+  - Other modes available (see documentation)
+</ParamField>
+
+<ParamField path="tab_title_priority" type="string" default="manual, explicit, shell, fallback">
+  Comma-separated priority list for tab title sources:
+  - `manual` - User-set title via "Rename Tab"
+  - `explicit` - OSC sequences with the explicit prefix
+  - `shell` - Shell integration (prompt/command)
+  - `fallback` - Default fallback title
+</ParamField>
+
+<ParamField path="tab_title_fallback" type="string" default="Terminal">
+  Default tab title when no other source is available.
+</ParamField>
+
+```txt
+tab_title_mode = smart
+tab_title_priority = manual, explicit, shell, fallback
+tab_title_fallback = Terminal
+```
+
+### How Tab Titles Work
+
+Termy uses multiple sources to determine tab titles:
+
+1. **Manual** - When you rename a tab via `Cmd+Shift+R` or the menu
+2. **Explicit** - Applications can set titles using OSC sequences with the configured prefix
+3. **Shell** - Shell integration captures current directory and running commands
+4. **Fallback** - The default title when nothing else is available
+
+The `tab_title_priority` setting controls which source wins when multiple are available.
+
+## Shell Integration
+
+<ParamField path="tab_title_shell_integration" type="boolean" default="true">
+  Export `TERMY_*` environment variables for shell hooks.
+  
+  When enabled, Termy sets environment variables that your shell can use to report current directory and running commands.
+</ParamField>
+
+<ParamField path="tab_title_prompt_format" type="string" default="{cwd}">
+  Template for prompt-derived tab titles. Available variables:
+  - `{cwd}` - Current working directory
+  - Other template variables may be supported
+</ParamField>
+
+<ParamField path="tab_title_command_format" type="string" default="{command}">
+  Template for command-derived tab titles. Available variables:
+  - `{command}` - Currently running command
+  - Other template variables may be supported
+</ParamField>
+
+```txt
+tab_title_shell_integration = true
+tab_title_prompt_format = {cwd}
+tab_title_command_format = {command}
+```
+
+### Shell Integration Examples
+
+```txt
+# Show full path in prompt
+tab_title_prompt_format = {cwd}
+
+# Show just command name
+tab_title_command_format = {command}
+
+# Disable shell integration
+tab_title_shell_integration = false
+```
+
+<Tip>
+With shell integration enabled, tab titles automatically update to show:
+- Current directory when idle
+- Running command name when executing
+</Tip>
+
+## Explicit Title Prefix
+
+<ParamField path="tab_title_explicit_prefix" type="string" default="termy:tab:">
+  Prefix used for explicit OSC title payloads.
+  
+  Applications can set tab titles by sending OSC sequences starting with this prefix. This prevents conflicts with other terminal title-setting applications.
+</ParamField>
+
+```txt
+tab_title_explicit_prefix = termy:tab:
+```
+
+### Using Explicit Titles
+
+Applications can set tab titles using OSC sequences:
+
+```bash
+# Set tab title explicitly
+echo -e "\033]0;termy:tab:My Custom Title\007"
+```
+
+Only sequences with the configured prefix will be recognized as explicit tab titles.
+
+## Tab Strip Appearance
+
+<ParamField path="tab_close_visibility" type="string" default="active_hover">
+  When tab close buttons are visible:
+  - `active_hover` - Show on active tab when hovering
+  - `always` - Always show close buttons
+  - `never` - Never show close buttons
+  - `hover` - Show when hovering any tab
+</ParamField>
+
+<ParamField path="tab_width_mode" type="string" default="active_grow_sticky">
+  How tab widths react to active state:
+  - `active_grow_sticky` - Active tab grows and stays expanded
+  - `equal` - All tabs have equal width
+  - `active_grow` - Active tab grows temporarily
+</ParamField>
+
+```txt
+tab_close_visibility = active_hover
+tab_width_mode = active_grow_sticky
+```
+
+### Tab Strip Examples
+
+```txt
+# Minimal tab strip
+tab_close_visibility = never
+tab_width_mode = equal
+
+# Always show close buttons
+tab_close_visibility = always
+tab_width_mode = active_grow_sticky
+
+# Show close on hover
+tab_close_visibility = hover
+tab_width_mode = active_grow
+```
+
+## Tab Title Examples
+
+### Simple Static Titles
+
+```txt
+# Use fallback for all tabs
+tab_title_mode = smart
+tab_title_fallback = Terminal
+tab_title_shell_integration = false
+```
+
+### Directory-Focused Titles
+
+```txt
+# Prioritize showing current directory
+tab_title_mode = smart
+tab_title_priority = manual, shell, fallback
+tab_title_shell_integration = true
+tab_title_prompt_format = {cwd}
+tab_title_command_format = {command}
+```
+
+### Manual Control
+
+```txt
+# Prefer manual titles, fall back to directory
+tab_title_mode = smart
+tab_title_priority = manual, explicit, fallback
+tab_title_fallback = New Tab
+tab_title_shell_integration = false
+```
+
+## Renaming Tabs
+
+You can manually rename tabs at runtime:
+
+1. **Keyboard**: Press `Cmd+Shift+R` (macOS) or `Ctrl+Shift+R` (other platforms)
+2. **Command Palette**: `Cmd+P` → "Rename Tab"
+3. **Menu**: `File > Rename Tab`
+
+Manual titles take highest priority (when `manual` is in `tab_title_priority`).
+
+## Complete Example
+
+```txt
+# Tab title behavior
+tab_title_mode = smart
+tab_title_priority = manual, explicit, shell, fallback
+tab_title_fallback = Terminal
+
+# Shell integration
+tab_title_shell_integration = true
+tab_title_prompt_format = {cwd}
+tab_title_command_format = {command}
+tab_title_explicit_prefix = termy:tab:
+
+# Tab strip appearance
+tab_close_visibility = active_hover
+tab_width_mode = active_grow_sticky
+```

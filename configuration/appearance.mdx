@@ -1,0 +1,218 @@
+---
+title: Appearance
+description: Configure theme, fonts, transparency, and visual settings
+---
+
+Customize Termy's visual appearance including theme, fonts, window transparency, and padding.
+
+## Theme
+
+<ParamField path="theme" type="string" default="termy">
+  The active color scheme name. Use the built-in `termy` theme or import custom themes.
+  
+  Change themes at runtime with `Cmd+P` → "Switch Theme" or via the Settings UI.
+</ParamField>
+
+```txt
+theme = termy
+```
+
+### Available Themes
+
+Termy includes several built-in themes. You can also import custom themes from JSON files:
+
+1. Open Command Palette (`Cmd+P` or `Ctrl+P`)
+2. Search for "Import Colors"
+3. Select a theme JSON file
+
+See [Colors](/configuration/colors) for details on creating custom themes.
+
+## Font
+
+<ParamField path="font_family" type="string" default="JetBrains Mono">
+  The font family used for terminal text. Must be a monospace font installed on your system.
+</ParamField>
+
+<ParamField path="font_size" type="number" default="14">
+  Terminal font size in pixels. You can also zoom in/out at runtime with `Cmd+` and `Cmd-`.
+</ParamField>
+
+```txt
+font_family = JetBrains Mono
+font_size = 14
+```
+
+### Font Recommendations
+
+Popular monospace fonts that work well with Termy:
+
+- **JetBrains Mono** (default) - Great ligatures and readability
+- **Cascadia Code** - Microsoft's modern coding font
+- **Fira Code** - Popular font with extensive ligatures
+- **SF Mono** - macOS system monospace font
+- **Menlo** - Classic macOS font
+- **Consolas** - Windows system font
+
+<Tip>
+Make sure the font is installed system-wide before adding it to your config. Termy will fall back to the default if the font is not found.
+</Tip>
+
+## Window Transparency
+
+<ParamField path="background_opacity" type="number" default="1">
+  Window background opacity level from `0.0` (fully transparent) to `1.0` (fully opaque).
+</ParamField>
+
+<ParamField path="background_blur" type="boolean" default="false">
+  Enable blur effect for transparent backgrounds. Only visible when `background_opacity` is less than `1.0`.
+  
+  <Note>Platform support varies. Works best on macOS.</Note>
+</ParamField>
+
+```txt
+# 95% opacity with blur effect
+background_opacity = 0.95
+background_blur = true
+```
+
+### Transparency Examples
+
+```txt
+# Fully opaque (default)
+background_opacity = 1
+background_blur = false
+
+# Subtle transparency
+background_opacity = 0.95
+background_blur = true
+
+# Heavy transparency (for overlays)
+background_opacity = 0.8
+background_blur = true
+```
+
+## Padding
+
+<ParamField path="padding_x" type="number" default="12">
+  Left and right padding around terminal content in pixels.
+</ParamField>
+
+<ParamField path="padding_y" type="number" default="8">
+  Top and bottom padding around terminal content in pixels.
+</ParamField>
+
+```txt
+padding_x = 12
+padding_y = 8
+```
+
+### Padding Tips
+
+- Increase padding for a more spacious look
+- Decrease padding to maximize terminal space
+- Use symmetrical padding for balance
+
+```txt
+# Minimal padding
+padding_x = 4
+padding_y = 4
+
+# Generous padding
+padding_x = 20
+padding_y = 16
+```
+
+## Window Dimensions
+
+<ParamField path="window_width" type="number" default="1280">
+  Default startup window width in pixels. Only applies to new windows.
+</ParamField>
+
+<ParamField path="window_height" type="number" default="820">
+  Default startup window height in pixels. Only applies to new windows.
+</ParamField>
+
+```txt
+window_width = 1280
+window_height = 820
+```
+
+<Warning>
+Window dimension settings only affect newly created windows, not existing ones.
+</Warning>
+
+## UI Customization
+
+<ParamField path="show_termy_in_titlebar" type="boolean" default="true">
+  Show or hide the "Termy" branding in the window titlebar.
+</ParamField>
+
+<ParamField path="command_palette_show_keybinds" type="boolean" default="true">
+  Show keyboard shortcut badges in command palette rows.
+</ParamField>
+
+```txt
+show_termy_in_titlebar = true
+command_palette_show_keybinds = true
+```
+
+## Pane Focus Effects
+
+<ParamField path="pane_focus_effect" type="string" default="soft_spotlight">
+  How inactive panes are visually dimmed when a pane is active. Controls the dimming algorithm.
+</ParamField>
+
+<ParamField path="pane_focus_strength" type="number" default="0.6">
+  Strength of active pane emphasis from `0.0` (no dimming) to `2.0` (heavy dimming).
+</ParamField>
+
+```txt
+pane_focus_effect = soft_spotlight
+pane_focus_strength = 0.6
+```
+
+### Focus Effect Examples
+
+```txt
+# Subtle dimming
+pane_focus_effect = soft_spotlight
+pane_focus_strength = 0.4
+
+# Strong dimming
+pane_focus_effect = soft_spotlight
+pane_focus_strength = 1.2
+
+# No dimming
+pane_focus_strength = 0.0
+```
+
+## Complete Example
+
+```txt
+# Theme and colors
+theme = tokyo-night
+
+# Font settings
+font_family = Cascadia Code
+font_size = 16
+
+# Window transparency
+background_opacity = 0.95
+background_blur = true
+
+# Padding
+padding_x = 16
+padding_y = 12
+
+# Window size
+window_width = 1440
+window_height = 900
+
+# UI preferences
+show_termy_in_titlebar = false
+command_palette_show_keybinds = true
+
+# Pane focus
+pane_focus_effect = soft_spotlight
+pane_focus_strength = 0.8
+```

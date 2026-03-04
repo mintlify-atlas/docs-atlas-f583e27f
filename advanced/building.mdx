@@ -1,0 +1,437 @@
+---
+title: Building from Source
+description: Build and run Termy from source code
+---
+
+This guide covers building Termy from source on macOS, Windows, and Linux.
+
+## Prerequisites
+
+### Rust Toolchain
+
+Termy requires Rust with edition 2024 support:
+
+```bash
+# Install rustup (Rust installer)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Update to latest stable
+rustup update stable
+```
+
+Verify installation:
+
+```bash
+rustc --version  # Should be 1.85+ for edition 2024
+cargo --version
+```
+
+### System Dependencies
+
+<AccordionGroup>
+  <Accordion title="macOS">
+    **Required:**
+    - Xcode Command Line Tools:
+      ```bash
+      xcode-select --install
+      ```
+    - macOS SDK 10.15+ (usually included with Xcode)
+
+    **Optional (for packaging):**
+    - [just](https://github.com/casey/just) task runner:
+      ```bash
+      brew install just
+      ```
+    - create-dmg for DMG creation:
+      ```bash
+      brew install create-dmg
+      ```
+
+    **Notes:**
+    - Termy detects macOS SDK >= 26 at build time for feature flags
+    - Core-text is pinned to 21.0.0 to avoid core-graphics conflicts
+  </Accordion>
+
+  <Accordion title="Windows">
+    **Required:**
+    - Visual Studio 2019+ with C++ build tools
+    - Windows 10 SDK
+
+    **Optional (for packaging):**
+    - [Inno Setup 6](https://jrsoftware.org/isinfo.php) for installer creation
+    - PowerShell 5.1+ (usually pre-installed)
+    - [just](https://github.com/casey/just) (install via cargo):
+      ```powershell
+      cargo install just
+      ```
+
+    **Notes:**
+    - The build script embeds `assets/termy.ico` into the binary
+    - Windows subsystem is set to `windows` (no console window)
+  </Accordion>
+
+  <Accordion title="Linux">
+    **Required:**
+    - GCC or Clang
+    - Development libraries:
+      ```bash
+      # Ubuntu/Debian
+      sudo apt install build-essential pkg-config libfontconfig1-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+      # Fedora
+      sudo dnf install gcc pkg-config fontconfig-devel libxcb-devel
+
+      # Arch
+      sudo pacman -S base-devel fontconfig libxcb
+      ```
+
+    **Optional:**
+    - [just](https://github.com/casey/just):
+      ```bash
+      cargo install just
+      ```
+  </Accordion>
+</AccordionGroup>
+
+### Git
+
+Termy has git dependencies (GPUI, alacritty_terminal):
+
+```bash
+git --version  # Git 2.0+
+```
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/lassejlv/termy.git
+cd termy
+```
+
+The repository includes:
+- Source code (`src/`, `crates/`)
+- Build scripts (`justfile`, `scripts/`)
+- Assets (`assets/`, `themes/`)
+- Documentation (`docs/`)
+
+## Build Commands
+
+### Quick Start
+
+Build and run Termy in release mode:
+
+```bash
+cargo run --release
+```
+
+This compiles optimized binaries and launches the application.
+
+### Development Build
+
+For faster iteration (unoptimized):
+
+```bash
+cargo run
+```
+
+Development builds include:
+- Debug assertions
+- Render metrics support (set `TERMY_RENDER_METRICS=1`)
+- Faster compilation
+
+### Build Only
+
+Compile without running:
+
+```bash
+# Release build
+cargo build --release
+
+# Debug build
+cargo build
+```
+
+Binaries are output to:
+- `target/release/termy` (or `termy.exe` on Windows)
+- `target/debug/termy` (debug build)
+
+### Using Just
+
+The `justfile` provides convenient aliases:
+
+```bash
+just --list         # Show all tasks
+just run            # cargo run --release
+just build          # cargo build --release
+just check          # cargo check --workspace
+just clean          # cargo clean && rm -rf target
+```
+
+## Workspace Check
+
+Verify all crates compile:
+
+```bash
+cargo check --workspace
+```
+
+This checks:
+- Main `termy` binary
+- All 15 workspace crates
+- Platform-specific code (where applicable)
+
+## Platform-Specific Builds
+
+### macOS: Building a DMG
+
+Create a distributable DMG installer:
+
+```bash
+just build-dmg -- --version 0.1.40 --arch arm64
+```
+
+Options:
+- `--version VERSION`: Version string (defaults to Cargo.toml)
+- `--arch ARCH`: `arm64` or `x86_64`
+- `--target TARGET`: `aarch64-apple-darwin` or `x86_64-apple-darwin`
+- `--no-layout`: Skip Finder layout customization
+
+Output: `target/release/Termy-0.1.40-macos-arm64.dmg`
+
+**Signed & Notarized DMG:**
+
+```bash
+just build-dmg-signed -- \
+  --sign-identity "Developer ID Application: Your Name (TEAMID)" \
+  --notary-profile TERMY_NOTARY
+```
+
+Requires:
+- Valid Apple Developer ID certificate
+- Notarization credentials in Keychain (via `xcrun notarytool store-credentials`)
+
+### Windows: Building an Installer
+
+Create a Windows Setup.exe:
+
+```powershell
+just build-setup -- -Version 0.1.40 -Arch x64
+```
+
+Options:
+- `-Version`: Version string
+- `-Arch`: `x64` or `x86`
+- `-Target`: `x86_64-pc-windows-msvc` or `i686-pc-windows-msvc`
+
+Requires [Inno Setup](https://jrsoftware.org/isinfo.php) installed.
+
+Output: `target/release/Termy-Setup-0.1.40-x64.exe`
+
+### Cross-Compilation
+
+Build for different targets:
+
+```bash
+# Add target
+rustup target add x86_64-apple-darwin
+
+# Build for target
+cargo build --release --target x86_64-apple-darwin
+```
+
+Common targets:
+- `aarch64-apple-darwin` (macOS Apple Silicon)
+- `x86_64-apple-darwin` (macOS Intel)
+- `x86_64-pc-windows-msvc` (Windows 64-bit)
+- `x86_64-unknown-linux-gnu` (Linux)
+
+## Running from Source
+
+### Basic Execution
+
+```bash
+cargo run --release
+```
+
+### With Environment Variables
+
+Enable logging and debug features:
+
+```bash
+# Info-level logging
+RUST_LOG=info cargo run --release
+
+# Render metrics (debug builds only)
+RUST_LOG=info TERMY_RENDER_METRICS=1 cargo run
+```
+
+Log levels: `error`, `warn`, `info`, `debug`, `trace`
+
+### Running Specific Binaries
+
+The workspace includes multiple binaries:
+
+```bash
+# Main application
+cargo run --release -p termy
+
+# CLI tool
+cargo run --release -p termy_cli -- --help
+
+# Build automation
+cargo run -p xtask -- generate-keybindings-doc
+```
+
+## Development Workflow
+
+### Check Before Building
+
+Fast syntax/type checking:
+
+```bash
+cargo check          # Check main binary
+cargo check --workspace  # Check all crates
+```
+
+### Run Tests
+
+```bash
+# All tests
+cargo test --workspace
+
+# Specific crate
+cargo test -p termy_terminal_ui
+
+# Tmux integration (requires tmux >= 3.3)
+just test-tmux-integration
+```
+
+### Architecture Validation
+
+Run dependency boundary checks:
+
+```bash
+./scripts/check-boundaries.sh
+```
+
+Or via just:
+
+```bash
+just check-boundaries
+```
+
+This enforces:
+- No GPUI in CLI crates
+- No circular config dependencies
+- Fresh generated documentation
+
+### Generate Documentation
+
+Auto-generate reference docs:
+
+```bash
+# Generate keybind reference
+just generate-keybindings-doc
+
+# Generate config reference
+just generate-config-doc
+
+# Verify they're up-to-date (CI check)
+just check-keybindings-doc
+just check-config-doc
+```
+
+## Debug Features
+
+### Render Metrics
+
+Monitor terminal rendering performance (debug builds only):
+
+```bash
+RUST_LOG=info TERMY_RENDER_METRICS=1 cargo run
+```
+
+Metrics logged:
+- `full`: Full cell cache rebuilds
+- `partial`: Dirty-span updates
+- `reuse`: Cache reuse (no update)
+- `dirty_span`: Dirty span count
+- `patched_cell`: Cells patched
+- `grid_paint`, `shape_line`: Paint/shaping work
+
+Expected behavior: `full` should stay near 0 during cursor blink; `reuse` or small `partial` values indicate efficient rendering.
+
+### Tmux Integration Testing
+
+Test tmux split functionality:
+
+```bash
+just test-tmux-integration
+```
+
+Requirements:
+- tmux >= 3.3
+- Optional: `TERMY_TEST_TMUX_BIN=/custom/path/to/tmux`
+
+Tests run in isolation with temporary tmux sockets.
+
+## Troubleshooting
+
+### Linker Errors (Linux)
+
+If you see linker errors about missing libraries:
+
+```bash
+# Ubuntu/Debian
+sudo apt install libfontconfig1-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+# Fedora
+sudo dnf install fontconfig-devel libxcb-devel
+```
+
+### GPUI Build Errors
+
+GPUI requires specific system libraries. Ensure you have:
+- macOS: Xcode Command Line Tools
+- Windows: Visual Studio C++ build tools
+- Linux: X11/xcb development libraries
+
+### Cargo.lock Conflicts
+
+If git dependencies fail to resolve:
+
+```bash
+cargo clean
+rm Cargo.lock
+cargo build
+```
+
+### Slow Builds
+
+Speed up compilation:
+
+```bash
+# Use mold linker (Linux)
+sudo apt install mold
+export RUSTFLAGS="-C link-arg=-fuse-ld=mold"
+
+# Use lld linker (macOS/Windows)
+rustup component add lld
+export RUSTFLAGS="-C link-arg=-fuse-ld=lld"
+
+# Parallel jobs (adjust to CPU cores)
+export CARGO_BUILD_JOBS=8
+```
+
+Or use the [sccache](https://github.com/mozilla/sccache) build cache:
+
+```bash
+cargo install sccache
+export RUSTC_WRAPPER=sccache
+```
+
+## Next Steps
+
+- [Architecture](/advanced/architecture) - Understand the codebase structure
+- [Contributing](/advanced/contributing) - Submit changes to Termy
+- [Configuration](/configuration/overview) - Customize your build

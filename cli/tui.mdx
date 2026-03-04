@@ -1,0 +1,421 @@
+---
+title: 'Interactive TUI'
+description: 'Visual interface for all Termy CLI features'
+---
+
+The `-tui` command launches an interactive terminal user interface (TUI) that provides visual access to all CLI features in a single, easy-to-navigate interface.
+
+## Usage
+
+```bash
+termy-cli -tui
+```
+
+## What It Does
+
+The TUI provides a split-pane interface with:
+- **Left panel**: Menu of all available features
+- **Right panel**: Content display for the selected feature
+- **Keyboard navigation**: Quick access without typing commands
+
+## Interface Overview
+
+```
+┌─────────────────────────┬──────────────────────────────────────────┐
+│ Termy CLI              │ Description                             │
+│                        │                                          │
+│ > Show Config          │ Display current configuration settings   │
+│   List Fonts           │                                          │
+│   List Themes          │                                          │
+│   List Colors          │                                          │
+│   List Keybindings     │                                          │
+│   List Actions         │                                          │
+│   Validate Config      │                                          │
+│   Edit Config          │                                          │
+│                        │                                          │
+└────────────────────────┴──────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ Content                                                         │
+│                                                                  │
+│ Config file: /Users/username/.config/termy/config              │
+│                                                                  │
+│ theme = "nord"                                                  │
+│ font = "JetBrains Mono"                                         │
+│ font_size = 14                                                  │
+│ cursor_blink = true                                             │
+│ ...                                                             │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+ q/Esc: Quit | j/k or Up/Down: Navigate | PgUp/PgDn: Scroll
+```
+
+## Available Features
+
+The TUI provides access to eight key features:
+
+### 1. Show Config
+
+Displays your current configuration file contents.
+
+- Shows the config file path
+- Displays all settings
+- Indicates if using defaults (when file doesn't exist)
+
+### 2. List Fonts
+
+Shows all available monospace fonts on your system.
+
+- Platform-specific font enumeration
+- Sorted alphabetically
+- Ready to copy into your config
+
+### 3. List Themes
+
+Browses all built-in color themes.
+
+- Complete list of theme identifiers
+- Use these names in `theme = "name"` config
+
+### 4. List Colors
+
+Displays the color palette for your active theme.
+
+- Theme name
+- All ANSI colors with hex codes
+- Foreground, background, and cursor colors
+
+### 5. List Keybindings
+
+Shows all active keyboard shortcuts.
+
+- Key combination and action pairs
+- Availability status
+- Tmux requirements
+- Restart requirements
+
+### 6. List Actions
+
+Displays all available actions for keybinding.
+
+- Complete action names
+- Availability metadata
+- Use these in `keybind = key=action` config
+
+### 7. Validate Config
+
+Checks your configuration for errors.
+
+- Live validation feedback
+- Error messages with line numbers
+- Warning messages for potential issues
+- "Valid" or "Invalid" result
+
+### 8. Edit Config
+
+Opens your configuration file in an editor.
+
+- Press Enter on this menu item
+- TUI exits and launches your editor
+- Uses `$EDITOR` or platform default
+
+## Keyboard Navigation
+
+### Menu Navigation
+
+| Key | Action |
+|-----|--------|
+| `j` or `↓` | Move down in menu |
+| `k` or `↑` | Move up in menu |
+| `Enter` | Select item (used for Edit Config) |
+
+### Content Scrolling
+
+| Key | Action |
+|-----|--------|
+| `PgUp` | Scroll content up (5 lines) |
+| `PgDn` | Scroll content down (5 lines) |
+
+### General
+
+| Key | Action |
+|-----|--------|
+| `q` | Quit TUI |
+| `Esc` | Quit TUI |
+
+<Tip>
+Use `j` and `k` for Vim-style navigation, or arrow keys for traditional navigation.
+</Tip>
+
+## Use Cases
+
+### Exploring Configuration Options
+
+Before editing your config, explore what's available:
+
+<Steps>
+  <Step title="Launch TUI">
+    ```bash
+    termy-cli -tui
+    ```
+  </Step>
+  
+  <Step title="Browse resources">
+    Navigate to:
+    - **List Fonts**: See available fonts
+    - **List Themes**: Find a theme you like
+    - **List Actions**: Discover keybinding actions
+  </Step>
+  
+  <Step title="Edit config">
+    Select "Edit Config" and press Enter to make changes
+  </Step>
+</Steps>
+
+### Validating Changes
+
+Check your configuration without leaving the TUI:
+
+<Steps>
+  <Step title="View current config">
+    Select "Show Config" to see current settings
+  </Step>
+  
+  <Step title="Exit and edit">
+    Press `q` to exit, then:
+    ```bash
+    termy-cli -edit-config
+    ```
+  </Step>
+  
+  <Step title="Validate in TUI">
+    Relaunch TUI and select "Validate Config":
+    ```bash
+    termy-cli -tui
+    ```
+  </Step>
+</Steps>
+
+### Discovering Keybindings
+
+Quickly look up keyboard shortcuts:
+
+1. Launch TUI: `termy-cli -tui`
+2. Navigate to "List Keybindings"
+3. Use `PgUp`/`PgDn` to scroll through all bindings
+4. Find the action you're looking for
+
+### Theme Selection Workflow
+
+Visually compare themes:
+
+<Steps>
+  <Step title="List available themes">
+    Select "List Themes" to see all options
+  </Step>
+  
+  <Step title="Note a theme name">
+    Remember or copy a theme identifier (e.g., "nord")
+  </Step>
+  
+  <Step title="Edit config">
+    Select "Edit Config", set `theme = "nord"`
+  </Step>
+  
+  <Step title="View colors">
+    Relaunch TUI, select "List Colors" to see the palette
+  </Step>
+</Steps>
+
+## Benefits Over Individual Commands
+
+<AccordionGroup>
+  <Accordion title="Single Interface">
+    Access all features without remembering individual command names:
+    
+    ```bash
+    # Instead of:
+    termy-cli -list-fonts
+    termy-cli -list-themes
+    termy-cli -list-keybinds
+    termy-cli -validate-config
+    
+    # Just use:
+    termy-cli -tui
+    ```
+  </Accordion>
+  
+  <Accordion title="Visual Feedback">
+    - Structured layout for easier reading
+    - Scrollable content for long outputs
+    - Clear organization of information
+  </Accordion>
+  
+  <Accordion title="Exploratory Workflow">
+    - Browse resources without typing commands
+    - Quick navigation between features
+    - Learn what's available interactively
+  </Accordion>
+  
+  <Accordion title="Validation Preview">
+    - See validation results visually
+    - Errors and warnings clearly formatted
+    - Easy to read line numbers and messages
+  </Accordion>
+</AccordionGroup>
+
+## Technical Details
+
+### Implementation
+
+The TUI is built using:
+- **ratatui**: Terminal UI framework
+- **crossterm**: Cross-platform terminal manipulation
+- Supports all major platforms (macOS, Linux, Windows)
+
+### Performance
+
+The TUI:
+- Loads data on-demand when selecting menu items
+- Responds to input in real-time
+- Minimal resource usage
+
+### Compatibility
+
+Works in:
+- Standard terminal emulators
+- SSH sessions
+- Tmux/screen sessions
+- Windows Terminal, iTerm2, GNOME Terminal, etc.
+
+<Note>
+The TUI requires a terminal with basic color and navigation support. It works in virtually all modern terminal emulators.
+</Note>
+
+## Exiting the TUI
+
+There are two ways to exit:
+
+1. **Normal exit**: Press `q` or `Esc`
+   - Returns to your shell
+   - Exit code 0
+
+2. **Edit Config exit**: Press `Enter` on "Edit Config"
+   - TUI exits
+   - Opens your config in editor
+   - Returns to shell when editor closes
+
+## TUI vs. Direct Commands
+
+| Scenario | Recommended |
+|----------|-------------|
+| Quick lookup (one thing) | Direct command (`termy-cli -list-fonts`) |
+| Exploring multiple features | TUI (`termy-cli -tui`) |
+| Scripting/automation | Direct commands |
+| Learning Termy | TUI |
+| Validation + browsing | TUI |
+| CI/CD pipelines | Direct commands |
+
+## Example Workflow
+
+Here's a complete workflow using the TUI:
+
+<Steps>
+  <Step title="Launch TUI">
+    ```bash
+    termy-cli -tui
+    ```
+  </Step>
+  
+  <Step title="Check current config">
+    Navigate to "Show Config" with arrow keys to see your settings
+  </Step>
+  
+  <Step title="Browse fonts">
+    Navigate to "List Fonts" to find a new font
+  </Step>
+  
+  <Step title="Browse themes">
+    Navigate to "List Themes" to discover a new theme
+  </Step>
+  
+  <Step title="Exit TUI">
+    Press `q` to exit
+  </Step>
+  
+  <Step title="Edit config">
+    ```bash
+    termy-cli -edit-config
+    ```
+    
+    Update:
+    ```toml
+    theme = "tokyo-night"
+    font = "JetBrains Mono"
+    ```
+  </Step>
+  
+  <Step title="Validate with TUI">
+    ```bash
+    termy-cli -tui
+    ```
+    
+    Navigate to "Validate Config" to check for errors
+  </Step>
+  
+  <Step title="Preview colors">
+    Navigate to "List Colors" to see the new theme's palette
+  </Step>
+  
+  <Step title="Restart Termy">
+    Exit TUI and restart Termy to see your changes
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="TUI looks broken or garbled">
+    Your terminal might not support the required features. Try:
+    
+    ```bash
+    # Check terminal type
+    echo $TERM
+    
+    # Should be xterm-256color or similar
+    export TERM=xterm-256color
+    termy-cli -tui
+    ```
+  </Accordion>
+  
+  <Accordion title="Keyboard shortcuts don't work">
+    Some terminal emulators intercept certain keys. If navigation doesn't work:
+    
+    - Use alternative keys (`j`/`k` instead of arrows)
+    - Check your terminal's keyboard settings
+    - Try a different terminal emulator
+  </Accordion>
+  
+  <Accordion title="Content is cut off">
+    Resize your terminal window or use scrolling:
+    
+    - Make terminal window larger
+    - Use `PgUp`/`PgDn` to scroll content
+  </Accordion>
+</AccordionGroup>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="CLI Overview" icon="terminal" href="/cli/overview">
+    Learn about all CLI commands
+  </Card>
+  <Card title="Edit Config" icon="pen-to-square" href="/cli/config-management#edit-config">
+    Edit configuration directly
+  </Card>
+  <Card title="Validate Config" icon="check" href="/cli/config-management#validate-config">
+    Validate from command line
+  </Card>
+  <Card title="Configuration Guide" icon="book" href="/configuration/overview">
+    Complete configuration reference
+  </Card>
+</CardGroup>
